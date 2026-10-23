@@ -7,6 +7,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 KOK_DIZIN = Path(__file__).resolve().parent.parent
+TAKIMLAR_DIZINI = KOK_DIZIN / "takimlar"
+SKILLS_DIZINI = KOK_DIZIN / "skills"
+SIRKET_DIZINI = KOK_DIZIN / "sirket"
 load_dotenv(KOK_DIZIN / ".env")
 
 def model_haritasi_oku() -> dict:

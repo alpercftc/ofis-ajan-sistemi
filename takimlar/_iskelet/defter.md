@@ -1,3 +1,7 @@
-# {takim_adi} Tecrübe Defteri
+# Defter — TAKIM
 
-Bu defter, {takim_adi} biriminin önceki koşulardan edindiği tecrübeleri, Alper'in düzeltmelerini ve sık yapılan hatalardan çıkarılan dersleri içerir.
+> Ajan yazar, insan (Alper) okur. Her koşudan en fazla bir ders. Yeni ders üste.
+
+## Dersler
+
+## Kural önerileri (Alper'e)

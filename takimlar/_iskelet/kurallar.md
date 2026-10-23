@@ -1,6 +1,13 @@
-# {takim_adi} Çalışma Kuralları ve Sınırları
+# Kurallar — TAKIM
 
-1. `ANAYASA.md` ve `sirket/AJAN-KIMLIGI.md` kurallarına tam uyulacaktır.
-2. Üretilen tüm raporlar ve dosyalar yalnızca `takimlar/{takim_adi}/cikti/` klasörüne yazılacaktır.
-3. Yetki sınırları dışındaki hiçbir Python koduna veya kural dosyasına dokunulmayacaktır.
-4. Çıktı tamamlandığında `durum.json` içindeki ilgili görev 'tamam' olarak güncellenecektir.
+> Müfettiş bu dosyayı okur ve koşu kaydını buna göre denetler. Yalnızca insan (Alper) değiştirir.
+
+## Neye göre çalışır
+- `ANAYASA.md` ve `sirket/AJAN-KIMLIGI.md`'nin tamamı geçerlidir; aşağıdakiler ona ektir.
+
+## Asla yapmaz
+- Yetki sınırları dışındaki Python koduna, `.env` dosyasına veya `C:\Alper\vBeyin` dizinine dokunmaz.
+
+## Çıktı kalite ölçütleri
+- Her iddia etiketli (`✅ Tam Uygun` / `🟡 Uyarı` / `⛔ Belge Yok`) ve kaynaklı.
+- Çıktı Türkçe; teknik terimler orijinal hâliyle kalır.
