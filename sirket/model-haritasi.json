@@ -1,0 +1,35 @@
+{
+  "aciklama": "Ofis Ajan Şirketi Platform ve Soyut Seviye Model Haritası",
+  "versiyon": "1.0.0",
+  "varsayilan_platform": "antigravity",
+  "platformlar": {
+    "antigravity": {
+      "yuksek": "gemini-2.5-pro",
+      "orta": "gemini-2.5-flash",
+      "hizli": "gemini-2.5-flash",
+      "denetci": "claude-3-7-sonnet"
+    },
+    "claude": {
+      "yuksek": "claude-3-7-sonnet",
+      "orta": "claude-3-5-sonnet",
+      "hizli": "claude-3-5-haiku",
+      "denetci": "gemini-2.5-pro"
+    },
+    "codex": {
+      "yuksek": "o3-mini",
+      "orta": "gpt-4o",
+      "hizli": "gpt-4o-mini",
+      "denetci": "claude-3-7-sonnet"
+    }
+  },
+  "ajan_seviyeleri": {
+    "dekan": "yuksek",
+    "dekan-sekreteri": "hizli",
+    "staj-burosu": "hizli",
+    "postaci": "hizli",
+    "memur": "orta",
+    "ik-memuru": "orta",
+    "bilgi-islem": "yuksek",
+    "mufettis": "denetci"
+  }
+}

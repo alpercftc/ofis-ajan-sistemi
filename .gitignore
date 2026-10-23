@@ -1,0 +1,41 @@
+# Ortam ve Gizli Anahtarlar (KVKK & Güvenlik)
+.env
+*.env
+token_cache.bin
+
+# Alper Şahsi Islak İmza Dosyası
+sirket/sablonlar/imza.png
+
+# Öğrenci Profil Kartları ve Kişisel Veriler (KVKK)
+sirket/arsiv/ogrenciler/*
+!sirket/arsiv/ogrenciler/.gitkeep
+
+# Geçici Öğrenci Evrakları ve ZIP İçerikleri
+*.zip
+*.pdf
+*.docx
+*.jpg
+*.jpeg
+*.png
+
+# Ajan Çıktıları ve Geçici Raporlar
+takimlar/*/cikti/*
+!takimlar/*/cikti/.gitkeep
+
+# Python Önbellek ve Test Dosyaları
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Otomatik Derlenen Platform Profilleri
+.agents/
+.claude/
+
+# IDE ve İşletim Sistemi Kalıntıları
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
