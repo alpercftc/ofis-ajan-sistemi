@@ -19,9 +19,32 @@ from ayar import KOK_DIZIN, TAKIMLAR_DIZINI
 STAJ_DURUM_YOLU = TAKIMLAR_DIZINI / "staj-burosu" / "durum.json"
 AKTIF_SEKME = "Atölye"
 YETKILI_KISI = "Alper ÇİFTÇİ"
+ORTAK_SHEET_ID = os.getenv("ORTAK_SHEET_ID", "1d3w-ejJArUhjwbzXYfR32HHqmSwbM4nmHJsESMDyq8M")
+KISISEL_SHEET_ID = os.getenv("KISISEL_SHEET_ID", "14hqeXPSju6nhy7NKd6mA__zVNvSpjGad")
 VARSAYILAN_YEREL_XLSX = Path(
     r"C:\Users\alper\OneDrive - Yildiz Technical University\Staj Defterleri\Staj_Defterlerim.xlsx"
 )
+
+
+def _online_xlsx_indir(sheet_id: str):
+    """Google Sheets/Drive üzerindeki tabloyu online olarak (export=xlsx) bellek içine çeker."""
+    import io
+    import urllib.request
+    import openpyxl
+
+    for url in (
+        f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=xlsx",
+        f"https://drive.google.com/uc?export=download&id={sheet_id}",
+    ):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                veri = resp.read()
+            if veri[:2] == b"PK":  # Geçerli ZIP/XLSX başlığı
+                return openpyxl.load_workbook(io.BytesIO(veri))
+        except Exception:
+            continue
+    return None
 
 
 def durum_oku(durum_yolu: Path = STAJ_DURUM_YOLU) -> dict:
@@ -110,16 +133,27 @@ def _guvenli_xlsx_oku(xlsx_yolu: Path):
         return openpyxl.load_workbook(io.BytesIO(veri))
 
 
-def kisisel_tablo_durum_listele(xlsx_yolu: Path = VARSAYILAN_YEREL_XLSX) -> Dict[str, List[dict]]:
+def kisisel_tablo_durum_listele(
+    sheet_id: Optional[str] = None, xlsx_yolu: Path = VARSAYILAN_YEREL_XLSX
+) -> Dict[str, List[dict]]:
     """
-    Ortak tabloya gitmeden doğrudan Kişisel Tablonun 'Atölye' sekmesindeki
-    okunmamış (boyasız + Not boş) ve revize bekleyen (boyasız + Not dolu) satırları döner.
+    Ortak tabloya gitmeden doğrudan Kişisel Tablonun (öncelikle KISISEL_SHEET_ID üzerinden online,
+    erişilemezse yerel yedekten) 'Atölye' sekmesindeki okunmamış ve revize bekleyen satırları döner.
     """
-    sonuc = {"okunmamis": [], "revize_bekleyen": [], "son_satir": None}
-    if not xlsx_yolu.exists():
-        return sonuc
+    sonuc = {"kaynak": None, "okunmamis": [], "revize_bekleyen": [], "son_satir": None}
+    hedef_id = sheet_id or KISISEL_SHEET_ID
+    wb = None
+    if hedef_id:
+        wb = _online_xlsx_indir(hedef_id)
+        if wb is not None:
+            sonuc["kaynak"] = f"online:{hedef_id}"
 
-    wb = _guvenli_xlsx_oku(xlsx_yolu)
+    if wb is None:
+        if not xlsx_yolu.exists():
+            return sonuc
+        wb = _guvenli_xlsx_oku(xlsx_yolu)
+        sonuc["kaynak"] = f"yerel:{xlsx_yolu.name}"
+
     if AKTIF_SEKME not in wb.sheetnames:
         return sonuc
     ws = wb[AKTIF_SEKME]
@@ -284,8 +318,8 @@ def main() -> int:
         )
 
     print(
-        f"[BILGI] Aktif Sekme: {AKTIF_SEKME} | Son İmleç: {imlec.get('son_ogrenci_no')} - "
-        f"{imlec.get('son_ogrenci_ad')} ({imlec.get('son_zaman_damgasi')})"
+        f"[BILGI] Kaynak: {durum_ozeti.get('kaynak')} | Aktif Sekme: {AKTIF_SEKME} | "
+        f"Son İmleç: {imlec.get('son_ogrenci_no')} - {imlec.get('son_ogrenci_ad')} ({imlec.get('son_zaman_damgasi')})"
     )
     print(f"[BILGI] Okunmamış (Boyasız, Not Boş) Defter Sayısı: {len(durum_ozeti['okunmamis'])}")
     for o in durum_ozeti["okunmamis"]:

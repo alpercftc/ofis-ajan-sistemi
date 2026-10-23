@@ -3,11 +3,20 @@
   "durum": "bosta",
   "son_kosu": null,
   "son_sonuc": null,
+  "son_posta_imleci": {
+    "kurumsal_son_tarih": null,
+    "gmail_son_uid": null,
+    "telegram_son_update_id": null
+  },
   "kuyruk": [],
   "mufettis": {
     "son_karar": null,
     "red_sayisi_7g": 0
   },
   "defter_son_ders": null,
-  "sayaclar": {}
+  "sayaclar": {
+    "taranan_eposta": 0,
+    "staj_revize_eslesmesi": 0,
+    "uretilen_taslak": 0
+  }
 }

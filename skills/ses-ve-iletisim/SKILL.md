@@ -3,6 +3,7 @@ name: ses-ve-iletisim
 description: Telegram sesli notlarını yerel metne çevirme, Gmail ve kurumsal e-posta protokolü, Telegram onay kartları ve buton şablonları.
 kaynak: https://github.com/SYSTRAN/faster-whisper ve https://github.com/AzureAD/microsoft-authentication-library-for-python
 lisans: MIT
+takimlar: [postaci]
 ---
 
 # Ses ve İletişim Yeteneği
