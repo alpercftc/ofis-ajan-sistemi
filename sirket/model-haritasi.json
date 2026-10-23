@@ -4,10 +4,10 @@
   "varsayilan_platform": "antigravity",
   "platformlar": {
     "antigravity": {
-      "yuksek": "gemini-2.5-pro",
-      "orta": "gemini-2.5-flash",
-      "hizli": "gemini-2.5-flash",
-      "denetci": "claude-3-7-sonnet"
+      "yuksek": "gemini-3.8-flash-high",
+      "orta": "gemini-3.8-flash-medium",
+      "hizli": "gemini-3.8-flash-medium",
+      "denetci": "claude-sonnet-medium"
     },
     "claude": {
       "yuksek": "claude-3-7-sonnet",
