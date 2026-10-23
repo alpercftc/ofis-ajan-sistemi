@@ -5,6 +5,7 @@ seviye: orta
 tools: [Read, Write, Glob, Grep]
 gerekli_anahtarlar: []
 skills: []
+butce_usd: 0
 ---
 
 # TAKIM

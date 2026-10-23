@@ -3,6 +3,7 @@ name: sicil-ve-imza
 description: Staj Sicil Fişi üzerinde dinamik çapa metin hizalama, olumsuz cümle üstü çizme, gün/tip ve şeffaf PNG imza basımı, OpenCV vesikalık kontrolü.
 kaynak: https://github.com/pymupdf/PyMuPDF ve https://github.com/opencv/opencv
 lisans: Apache-2.0
+takimlar: [staj-burosu]
 ---
 
 # Sicil ve İmza Yeteneği

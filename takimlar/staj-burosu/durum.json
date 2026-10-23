@@ -3,11 +3,23 @@
   "durum": "bosta",
   "son_kosu": null,
   "son_sonuc": null,
+  "tarama_imleci": {
+    "aktif_sekme": "Atölye",
+    "son_ogrenci_no": "200A3609",
+    "son_ogrenci_ad": "SONER ŞENGÜL",
+    "son_zaman_damgasi": "2026-09-11 20:00:57",
+    "kisisel_tablo_son_satir": 154,
+    "ortak_tablo_son_satir": null
+  },
   "kuyruk": [],
   "mufettis": {
     "son_karar": null,
     "red_sayisi_7g": 0
   },
   "defter_son_ders": null,
-  "sayaclar": {}
+  "sayaclar": {
+    "incelenen_ogrenci": 0,
+    "onaylanan_ogrenci": 0,
+    "revize_verilen": 0
+  }
 }
