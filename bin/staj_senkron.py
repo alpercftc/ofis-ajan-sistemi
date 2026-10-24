@@ -19,8 +19,8 @@ from ayar import KOK_DIZIN, TAKIMLAR_DIZINI
 STAJ_DURUM_YOLU = TAKIMLAR_DIZINI / "staj-burosu" / "durum.json"
 AKTIF_SEKME = "Atölye"
 YETKILI_KISI = "Alper ÇİFTÇİ"
-ORTAK_SHEET_ID = os.getenv("ORTAK_SHEET_ID", "1d3w-ejJArUhjwbzXYfR32HHqmSwbM4nmHJsESMDyq8M")
-KISISEL_SHEET_ID = os.getenv("KISISEL_SHEET_ID", "14hqeXPSju6nhy7NKd6mA__zVNvSpjGad")
+ORTAK_SHEET_ID = os.getenv("ORTAK_SHEET_ID", "")
+KISISEL_SHEET_ID = os.getenv("KISISEL_SHEET_ID", "")
 VARSAYILAN_YEREL_XLSX = Path(
     r"C:\Users\alper\OneDrive - Yildiz Technical University\Staj Defterleri\Staj_Defterlerim.xlsx"
 )
@@ -317,9 +317,10 @@ def main() -> int:
             kisisel_tablo_son_satir=son["satir"],
         )
 
+    print(f"[BILGI] Kaynak: {durum_ozeti.get('kaynak')} | Aktif Sekme: {AKTIF_SEKME}")
     print(
-        f"[BILGI] Kaynak: {durum_ozeti.get('kaynak')} | Aktif Sekme: {AKTIF_SEKME} | "
-        f"Son İmleç: {imlec.get('son_ogrenci_no')} - {imlec.get('son_ogrenci_ad')} ({imlec.get('son_zaman_damgasi')})"
+        f"[BILGI] Son İmleç: {imlec.get('son_ogrenci_no')} - "
+        f"{imlec.get('son_ogrenci_ad')} ({imlec.get('son_zaman_damgasi')})"
     )
     print(f"[BILGI] Okunmamış (Boyasız, Not Boş) Defter Sayısı: {len(durum_ozeti['okunmamis'])}")
     for o in durum_ozeti["okunmamis"]:
