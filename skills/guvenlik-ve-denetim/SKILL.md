@@ -3,6 +3,7 @@ name: guvenlik-ve-denetim
 description: T.C. Kimlik mod-10 doğrulaması, KVKK sızıntı filtreleri, Pydantic v2 şema denetimi ve veri kafesi savunması.
 kaynak: https://github.com/pydantic/pydantic
 lisans: MIT
+takimlar: [dekan]
 ---
 
 # Güvenlik ve Denetim Yeteneği

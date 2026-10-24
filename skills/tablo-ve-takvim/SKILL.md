@@ -3,7 +3,7 @@ name: tablo-ve-takvim
 description: Google Sheets senkronizasyonu (Atölye imleç takibi ve satır boyama), holidays.Turkey ile tatil hesabı ve Türkçe doğal dil tarih ayrıştırma kuralları.
 kaynak: https://github.com/burnash/gspread ve https://github.com/vacanza/python-holidays
 lisans: MIT
-takimlar: [staj-burosu, postaci]
+takimlar: [staj-burosu, postaci, dekan]
 ---
 
 # Tablo ve Takvim Yeteneği
