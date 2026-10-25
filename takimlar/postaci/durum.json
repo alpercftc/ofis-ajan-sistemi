@@ -1,19 +1,25 @@
 {
   "takim": "postaci",
   "durum": "bosta",
-  "son_kosu": null,
-  "son_sonuc": null,
+  "son_kosu": "2026-10-25 22:50",
+  "son_sonuc": "basarili",
   "son_posta_imleci": {
     "kurumsal_son_tarih": null,
     "gmail_son_uid": null,
-    "telegram_son_update_id": null
+    "telegram_son_update_id": 372953510
   },
-  "kuyruk": [],
+  "kuyruk": [
+    {
+      "id": "posta-tg-372953510",
+      "durum": "tamam",
+      "not": "Telegram gelen kutusundan 2 mesaj (372953509, 372953510) okundu ve işlendi"
+    }
+  ],
   "mufettis": {
-    "son_karar": null,
+    "son_karar": "ONAY",
     "red_sayisi_7g": 0
   },
-  "defter_son_ders": null,
+  "defter_son_ders": "Telegram mesajları offset imleciyle tekrar okunmadan işlendi.",
   "sayaclar": {
     "taranan_eposta": 0,
     "staj_revize_eslesmesi": 0,

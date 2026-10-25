@@ -1,16 +1,32 @@
 {
   "takim": "dekan",
   "durum": "bosta",
-  "son_kosu": null,
-  "son_sonuc": null,
-  "kuyruk": [],
+  "son_kosu": "2026-10-26T00:10:00+03:00",
+  "son_sonuc": "Birleşik Ofis Gündemi (2026-10-26-gundem.md) üretildi; 200A3609 imzalı sicil formu gönderim onayını bekliyor",
+  "kuyruk": [
+    {
+      "id": "mevzuat-onay-gmim-2026",
+      "durum": "tamam",
+      "not": "dekan-sekreteri mevzuat derlemesini tamamladı; Birleşik Gündem özetine ekle"
+    },
+    {
+      "id": "gundem-tg-372953510",
+      "durum": "tamam",
+      "not": "postaci gelen e-posta/Telegram mesaj özetini çıkardı; Birleşik Gündem'e ekle"
+    },
+    {
+      "id": "staj-onay-200A3609",
+      "durum": "tamam",
+      "not": "staj-burosu incelemeyi ve imzalı FR-1323 hazırlığını tamamladı; Birleşik Gündem onay kartına ekle"
+    }
+  ],
   "mufettis": {
-    "son_karar": null,
+    "son_karar": "ONAY",
     "red_sayisi_7g": 0
   },
-  "defter_son_ders": null,
+  "defter_son_ders": "2026-10-26: Komisyon Başkanına (ahmkaya@yildiz.edu.tr) atılacak e-postalarda yalnızca imzalı FR-1323 PDF'leri (<OgrenciNo>_<Ad>_<Soyad>_FR-1323.pdf) tek mail altında topluca eklenir ve gönderim tamamlanana kadar geçici klasör silinmez.",
   "sayaclar": {
-    "sunulan_gundem": 0,
-    "onaylanan_karar": 0
+    "sunulan_gundem": 1,
+    "onaylanan_karar": 1
   }
 }

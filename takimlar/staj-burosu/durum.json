@@ -11,7 +11,13 @@
     "kisisel_tablo_son_satir": 154,
     "ortak_tablo_son_satir": null
   },
-  "kuyruk": [],
+  "kuyruk": [
+    {
+      "id": "staj-200A3609",
+      "durum": "tamam",
+      "not": "200A3609 Soner ŞENGÜL — 19 iş günü Atölye stajı uygun, imzalı 200A3609_Soner_SENGUL_FR-1323.pdf hazır"
+    }
+  ],
   "mufettis": {
     "son_karar": "ONAY",
     "red_sayisi_7g": 0

@@ -3,15 +3,21 @@
   "durum": "bosta",
   "son_kosu": "2026-10-25 22:45",
   "son_sonuc": "basarili",
-  "kuyruk": [],
+  "kuyruk": [
+    {
+      "id": "mevzuat-gmim-2026",
+      "durum": "tamam",
+      "not": "GMİM Staj Uygulama Esasları (26 kural), YÖ-103, FR-0955/FR-1818 soruları ve GASM kılavuzu derlendi"
+    }
+  ],
   "mufettis": {
-    "son_karar": null,
+    "son_karar": "ONAY",
     "red_sayisi_7g": 0
   },
   "defter_son_ders": "2026-10-25: YÖ-103 üst yönerge olup GMİM için Madde 18 gereği bölüm staj uygulama esasları amir hükümdür.",
   "sayaclar": {
     "derlenen_belge": 11,
-    "tekil_kural_sayisi": 25,
+    "tekil_kural_sayisi": 26,
     "bolumlu_kilavuz_sayisi": 0
   }
 }
