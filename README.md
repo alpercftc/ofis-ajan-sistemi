@@ -8,21 +8,24 @@
 
 ## 🚀 1. Yapay Zekâya Sistemi Otomatik Kuran Prompt
 
-Bu repoyu klonladıktan sonra yapay zekâ kodlama asistanına (Antigravity veya Claude Code) aşağıdaki promptu vermen yeterlidir. Asistan sana birkaç temel soru soracak ve şirketini senin kurumuna göre kuracaktır:
+Bu repoyu klonladıktan sonra yapay zekâ kodlama asistanına (Antigravity veya Claude Code) aşağıdaki promptu vermen yeterlidir. Asistan sana kurulum ve çalışma tercihlerini soracak ve şirketini senin kurumuna göre otomatik yapılandıracaktır:
 
 ```markdown
 Sen bir Kurumsal Ofis Ajan Şirketi Mimarisini kuran uzman ajansın.
 Şu depodaki mimariyi benim ofisime göre kurmanı istiyorum: https://github.com/alpercftc/ofis-ajan-sistemi
 
-Kuruluma başlamadan önce lütfen bana sırayla şu 5 soruyu sor ve yanıtlarımı bekle:
+Kuruluma başlamadan önce lütfen bana sırayla şu 7 soruyu sor ve yanıtlarımı bekle:
 1. Yönetici Adı / Unvanı: (Sistemin sana ve raporlarda hitap edeceği isim, örn: "Prof. Dr. Ahmet YILMAZ" veya "Ahmet")
 2. Kurum / Bölüm Adı: (Örn: "YTÜ GMİM", "İTÜ Gemi İnşaatı", "Hukuk Fakültesi Dekanlığı" vb.)
 3. Hangi platformda koşacaksın?: (Antigravity veya Claude Code)
-4. Hangi görevleri devretmek istiyorsun?: (Örn: Staj değerlendirme, Gelen e-posta tarama/taslaklama, MÜDEK/Akreditasyon denetim hazırlığı, Resmi yazı taslakları)
-5. Bildirimleri nereden almak istersin?: (Telegram Botu mu, Masaüstü terminal mi?)
+4. Mesai Saatleri / Çalışma Penceresi: (Ajanların arka planda görev ve kontrol yapacağı saat aralığı, örn: "09:00 - 18:00")
+5. Otomatik Görev Zamanlayıcı Kurulsun mu?: (İşletim sistemine bağlı olarak - Windows Task Scheduler veya macOS launchd / Linux cron ile sabah mesai açılış ve akşam gün sonu rapor tetikleyicisi otomatik yüklensin mi?)
+6. Hangi görevleri devretmek istiyorsun?: (Örn: Staj değerlendirme, Gelen e-posta tarama/taslaklama, MÜDEK/Akreditasyon denetim hazırlığı, Resmi yazı taslakları)
+7. Bildirimleri nereden almak istersin?: (Telegram Botu mu, Masaüstü terminal mi?)
 
 Ben bu soruları yanıtladıktan sonra:
-- `ANAYASA.md`, `AGENTS.md` ve `takimlar/*/takim.md` dosyalarını yanıtlarıma göre kişiselleştir.
+- `ANAYASA.md`, `AGENTS.md`, `bin/ayar.py` (mesai saatleri) ve `takimlar/*/takim.md` (vardiyalar) dosyalarını yanıtlarıma göre kişiselleştir.
+- Seçtiğim işletim sistemine göre `bin/zamanla.py --kur` çalıştırarak sabah ve akşam tetiklerini otomatik zamanlayıcıya ekle.
 - `bin/agents_uret.py` koşturup ilgili platform profillerini (.agents veya .claude) üret.
 - `.env.example` dosyasını gösterip hangi API anahtarlarını gireceğimi listele.
 - `python -m pytest` ile kurulumu test edip sonucu bana raporla.
