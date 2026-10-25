@@ -2,6 +2,7 @@
 name: mufettis
 description: Bağımsız Müfettiş olarak staj raporlarını, e-Devlet SGK barkod/orijinallik doğrulamalarını, mevzuat uygunluğunu ve BT kodlarını farklı model ailesiyle (`seviye: denetci`) 2 katmanlı denetlemek.
 seviye: denetci
+takvim: her_kosu_sonrasi_anlik (kos.py icinde) ve her gun 22:00 (aksam gun sonu denetimi)
 tools: [Read, Write, Glob, Grep, Bash(py -3 bin/mufettis.py *)]
 gerekli_anahtarlar: []
 skills: [guvenlik-ve-denetim]

@@ -36,16 +36,20 @@ BIRIMLER = [
 
 def _durum_satirlari(kok: Path) -> list[str]:
     satirlar = [
-        "| Birim | Durum | Bekleyen İş | Son Koşu | Müfettiş Son Karar |",
-        "| :--- | :--- | :---: | :--- | :--- |",
+        "| Birim | Vardiya / Takvim (`takim.md`) | Durum | Bekleyen İş | Son Koşu | Müfettiş Son Karar |",
+        "| :--- | :--- | :--- | :---: | :--- | :--- |",
     ]
     for birim in BIRIMLER:
         d = ayar.durum_oku(birim, kok)
+        fm = ayar.takim_bilgisi(birim, kok) or {}
+        takvim = fm.get("takvim") or "—"
         kuyruk = d.get("kuyruk") or []
         bekleyen = sum(1 for k in kuyruk if k.get("durum") in ("bekliyor", "denetim_bekliyor"))
         son_kosu = d.get("son_kosu") or "—"
         muf_karar = (d.get("mufettis") or {}).get("son_karar") or "—"
-        satirlar.append(f"| `{birim}` | {d.get('durum', 'bosta')} | {bekleyen} | {son_kosu} | {muf_karar} |")
+        satirlar.append(
+            f"| `{birim}` | {takvim} | {d.get('durum', 'bosta')} | {bekleyen} | {son_kosu} | {muf_karar} |"
+        )
     return satirlar
 
 
@@ -53,7 +57,8 @@ def sabah_raporu(kok=None, kuru: bool = False) -> str:
     kok = Path(kok or KOK)
     an = datetime.now().astimezone()
     gun_adi = GUNLER[an.weekday()]
-    aktarilan = 0 if kuru else dagitici.kuyruklari_tara()
+    sonuc = dagitici.dagit(kok, an, kuru=kuru)
+    aktarilan = len(sonuc.get("zincir") or [])
     satirlar = [
         f"# 🌅 Sabah Ofis Özeti — {an:%Y-%m-%d} ({gun_adi})",
         "",

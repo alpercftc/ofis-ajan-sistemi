@@ -2,6 +2,7 @@
 name: staj-burosu
 description: Staj Bürosu uzmanı olarak ortak tablodaki son imleçten itibaren Alper'e yeni atanan Atölye staj defterlerini kişisel tabloya senkronize etmek, Alper'in analiz onayından sonra her koşuda tek bir öğrencinin belgelerini 5 kritere göre incelemek ve onay sonrası sicil fişini imzalayıp kişisel tablodaki satırı yeşile boyamak ve arşiv kartını güncellemek.
 seviye: orta
+takvim: sezonluk / her gun 08:00 senkron kontrolu ve kuyruk_tetik (08:00-23:00, Alper 'Incele/Onayla' emriyle 1 Kosu = 1 Ogrenci)
 tools: [Read, Write, Glob, Grep, Bash(py -3 bin/staj_senkron.py *), Bash(py -3 bin/evrak_hazirla.py *), Bash(py -3 bin/sicil_imzala.py *)]
 gerekli_anahtarlar: [ORTAK_SHEET_ID, KISISEL_SHEET_ID]
 skills: [evrak-isleme, sicil-ve-imza, tablo-ve-takvim]

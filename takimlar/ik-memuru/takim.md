@@ -2,6 +2,7 @@
 name: ik-memuru
 description: İK Memuru olarak Alper'in talimatıyla yeni ajan birimleri kurmak, sezonluk ajanları dondurup uyandırmak, ajanların görev/kural (.md) tanımlarını ve yetenek (skills/) entegrasyonlarını yönetmek.
 seviye: orta
+takvim: istek_uzerine / kuyruk_tetik (08:00-23:00, Alper veya Dekan kadro/kural/skill degisikligi istediginde)
 tools: [Read, Write, Glob, Grep, Bash(py -3 bin/takim_olustur.py *), Bash(py -3 bin/agents_uret.py *)]
 gerekli_anahtarlar: []
 skills: [web-test-ve-log, guvenlik-ve-denetim]
