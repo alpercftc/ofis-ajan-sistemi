@@ -3,12 +3,14 @@
 Üniversite fakülte/bölüm sekreterlikleri, staj komisyonları, kurumsal e-posta yönetimi ve idari evrak/denetim işlerini yürüten **8 yapay zekâ biriminden** oluşan çoklu platform (Google Antigravity & Claude Code) kapalı döngü ofis otomasyon sistemidir.
 
 > **Temel İlke (ANAYASA):** Yayın düğmesi daima **Yönetici/İnsan**'dadır. Hiçbir yapay zekâ ajanı açık Telegram veya masaüstü onayı olmadan dışarıya e-posta gönderemez veya resmi belge imzalayamaz. Sistem dosya tabanlıdır; ajanlar canlı sohbet etmez, durum makinesi (`bin/dagitici.py`) ile koordine olur.
+>
+> 📌 **Mevcut Şablon:** Bu repo varsayılan olarak **YTÜ GİDF GMİM (Gemi Makineleri İşletme Mühendisliği)** staj mevzuatı ve defter kurallarıyla hazır gelir. Bölüm arkadaşların repoyu klonlayıp doğrudan kullanabilir. Farklı bir fakülte veya bölümden biri kullanmak istediğinde ise aşağıdaki otomatik kurulum süreci kendi mevzuatını sisteme adapte eder.
 
 ---
 
 ## 🚀 1. Yapay Zekâya Sistemi Otomatik Kuran Prompt
 
-Bu repoyu klonladıktan sonra yapay zekâ kodlama asistanına (Antigravity veya Claude Code) aşağıdaki promptu vermen yeterlidir. Asistan sana kurulum ve çalışma tercihlerini soracak ve şirketini senin kurumuna göre otomatik yapılandıracaktır:
+Bu repoyu klonladıktan sonra yapay zekâ kodlama asistanına (Antigravity veya Claude Code) aşağıdaki promptu vermen yeterlidir. Asistan sana kurulum, bölüm ve çalışma tercihlerini soracak ve şirketini senin kurumuna göre otomatik yapılandıracaktır:
 
 ```markdown
 Sen bir Kurumsal Ofis Ajan Şirketi Mimarisini kuran uzman ajansın.
@@ -16,14 +18,31 @@ Sen bir Kurumsal Ofis Ajan Şirketi Mimarisini kuran uzman ajansın.
 
 Kuruluma başlamadan önce lütfen bana sırayla şu 7 soruyu sor ve yanıtlarımı bekle:
 1. Yönetici Adı / Unvanı: (Sistemin sana ve raporlarda hitap edeceği isim, örn: "Prof. Dr. Ahmet YILMAZ" veya "Ahmet")
-2. Kurum / Bölüm Adı: (Örn: "YTÜ GMİM", "İTÜ Gemi İnşaatı", "Hukuk Fakültesi Dekanlığı" vb.)
+2. Kurum / Bölüm Adı: (Örn: Varsayılan "YTÜ GMİM" mi kalacak, yoksa farklı bir üniversite/fakülte/bölüm mü?)
 3. Hangi platformda koşacaksın?: (Antigravity veya Claude Code)
 4. Mesai Saatleri / Çalışma Penceresi: (Ajanların arka planda görev ve kontrol yapacağı saat aralığı, örn: "09:00 - 18:00")
 5. Otomatik Görev Zamanlayıcı Kurulsun mu?: (İşletim sistemine bağlı olarak - Windows Task Scheduler veya macOS launchd / Linux cron ile sabah mesai açılış ve akşam gün sonu rapor tetikleyicisi otomatik yüklensin mi?)
 6. Hangi görevleri devretmek istiyorsun?: (Örn: Staj değerlendirme, Gelen e-posta tarama/taslaklama, MÜDEK/Akreditasyon denetim hazırlığı, Resmi yazı taslakları)
 7. Bildirimleri nereden almak istersin?: (Telegram Botu mu, Masaüstü terminal mi?)
 
-Ben bu soruları yanıtladıktan sonra:
+---
+📌 ÖZEL MEVZUAT VE EVRAK UYARLAMA PROTOKOLÜ (Farklı Bir Bölüm Seçilirse):
+Eğer kullanıcı varsayılan "YTÜ GMİM" dışında farklı bir fakülte/bölüm belirtirse:
+1. Proje ana dizininde `mevzuat-ve-evraklar-draft/` adında geçici bir klasör aç.
+2. Kullanıcıdan o bölüme ait belgeleri bu klasöre yüklemesini rica et ve kabaca şu örnek listeyi ver:
+   - Bölüm Staj Uygulama Esasları / Yönergesi (PDF)
+   - Staj Defteri Yazım Kuralları ve Defter Soruları / Şablonu (PDF/Word)
+   - Varsa Sıkça Sorulan Sorular, Akış Şeması veya Başvuru Kılavuzları (PDF)
+   - Varsa Staj Sicil Fişi / Değerlendirme Formu (PDF)
+   - Varsa boş/örnek doldurulmuş defter veya öğrenci ZIP örneği
+   - *(Kullanıcıya bu liste dışında da ilgili belgeleri ekleyebileceğini ve yükleme bittiğinde dosya dosya ne olduklarını kısaca açıklamasının harika olacağını belirt).*
+3. Kullanıcı dosyaları ekleyip açıkladıktan sonra:
+   - `sirket/mevzuat/` altındaki kural dosyalarını (`staj-kurallari.md`, `staj-defter-sorulari.md`) yeni bölüm belgelerine göre derle.
+   - `sirket/sablonlar/` altındaki sicil koordinat haritasını (`sicil-haritasi.json`) yeni form yapısına göre uyarla.
+   - Tüm belgeler başarıyla işlendikten sonra `mevzuat-ve-evraklar-draft/` geçici klasörünü güvenle sil.
+
+---
+GENEL KURULUM ADIMLARI (Tüm Bölümler İçin):
 - `ANAYASA.md`, `AGENTS.md`, `bin/ayar.py` (mesai saatleri) ve `takimlar/*/takim.md` (vardiyalar) dosyalarını yanıtlarıma göre kişiselleştir.
 - Seçtiğim işletim sistemine göre `bin/zamanla.py --kur` çalıştırarak sabah ve akşam tetiklerini otomatik zamanlayıcıya ekle.
 - `bin/agents_uret.py` koşturup ilgili platform profillerini (.agents veya .claude) üret.
