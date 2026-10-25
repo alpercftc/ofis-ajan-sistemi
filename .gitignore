@@ -24,6 +24,11 @@ takimlar/*/cikti/*
 !takimlar/*/cikti/.gitkeep
 takimlar/*/gelen/*
 !takimlar/*/gelen/.gitkeep
+takimlar/*/kosu/*
+!takimlar/*/kosu/.gitkeep
+sirket-log/*
+!sirket-log/.gitkeep
+sirket/arsiv/gecici/*
 
 # Python Önbellek ve Test Dosyaları
 __pycache__/

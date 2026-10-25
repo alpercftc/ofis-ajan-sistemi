@@ -161,8 +161,8 @@ def evrak_paketini_derin_analiz_et(hedef_path: Path) -> dict:
             muafiyet_tamam = all("Geçti" in v for v in dersler.values())
 
             rapor["transkript_analizi"] = {
-                "ogrenci_no": "200A3609",
-                "tc_kimlik": "16904302836",
+                "ogrenci_no": ogrenci_no,
+                "tc_kimlik": "169*****36",
                 "ad_soyad": "Soner ŞENGÜL",
                 "gpa": "2.49",
                 "onceki_staj_kayitlari": onceki_stajlar,
@@ -171,8 +171,8 @@ def evrak_paketini_derin_analiz_et(hedef_path: Path) -> dict:
                 "onceki_toplam_atolye_gun": 40 + 24 + (35 if muafiyet_tamam else 0),
             }
             rapor["ogrenci"] = {
-                "ogrenci_no": "200A3609",
-                "tc_kimlik": "16904302836",
+                "ogrenci_no": ogrenci_no,
+                "tc_kimlik": "169*****36",
                 "ad_soyad": "Soner ŞENGÜL",
             }
             t_doc.close()
@@ -208,11 +208,14 @@ def hazir_paket_md_olustur(rapor: dict, paket_md_yolu: Path):
     k_analiz = rapor.get("kase_imza_kontrolu", {})
     s_analiz = rapor.get("sgk_analizi", {})
 
+    tc_no = t_analiz.get("tc_kimlik", "169*****36")
+    tc_gosterim = tc_no if "*" in tc_no else f"{tc_no[:3]}*****{tc_no[-2:]}"
+
     satirlar = [
         "# Evrak Ön-İşleme ve Doğrulama Standart Paketi",
         "",
         f"**Öğrenci:** {t_analiz.get('ogrenci_no', '200A3609')} — {t_analiz.get('ad_soyad', 'Soner ŞENGÜL')}",
-        f"**T.C. Kimlik:** {t_analiz.get('tc_kimlik', '16904302836')[:3]}*****{t_analiz.get('tc_kimlik', '16904302836')[-2:]} (KVKK Maskeli)",
+        f"**T.C. Kimlik:** {tc_gosterim} (KVKK Maskeli)",
         f"**Genel Not Ortalaması (GNO):** {t_analiz.get('gpa', '2.49')}",
         "",
         "## 1. Tespit Edilen Belgeler",
