@@ -3,7 +3,7 @@ name: mevzuat-derleme
 description: Üniversite staj yönergeleri, yönetmelikler ve denetim kılavuzlarını iki modlu (Tekil Kural .md ve Bölümlü/İndeksli index_<dokuman>.md + bölüm .md) yapıya dönüştürme protokolü.
 kaynak: https://github.com/DS4SD/docling
 lisans: MIT
-takimlar: [dekan-sekreteri]
+takimlar: [dekan-sekreteri, memur]
 ---
 
 # Mevzuat Derleme Yeteneği

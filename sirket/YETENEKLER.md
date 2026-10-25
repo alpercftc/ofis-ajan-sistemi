@@ -8,7 +8,7 @@ Bu belge, 8 çekirdek birimin hangi yetenekleri (`skills/`) okuduğunu ve hangi 
 | **2** | `dekan-sekreteri` | Mevzuat Derleyici | `skills/mevzuat-derleme`, `skills/evrak-isleme` | `bin/ayar.py` |
 | **3** | `staj-burosu` | Staj ve Çapraz Kontrol | `skills/evrak-isleme`, `skills/sicil-ve-imza`, `skills/tablo-ve-takvim` | `bin/evrak_hazirla.py`, `bin/staj_senkron.py`, `bin/sicil_imzala.py` |
 | **4** | `postaci` | İletişim ve İş Planlayıcı | `skills/ses-ve-iletisim`, `skills/tablo-ve-takvim` | `bin/postaci_outlook.py`, `bin/telegram_koprusu.py` |
-| **5** | `memur` | İdari Evrak ve Denetim | `skills/evrak-isleme`, `skills/tablo-ve-takvim` | `bin/ayar.py` |
+| **5** | `memur` | İdari Evrak ve Denetim | `skills/mevzuat-derleme`, `skills/evrak-isleme`, `skills/tablo-ve-takvim` | `bin/evrak_hazirla.py` |
 | **6** | `ik-memuru` | Personel ve Kural Yöneticisi | `skills/web-test-ve-log`, `skills/guvenlik-ve-denetim` | `bin/agents_uret.py` |
 | **7** | `bilgi-islem` | Python ve Test Geliştirici | `skills/web-test-ve-log`, `skills/sicil-ve-imza` | `bin/*.py` (geliştirme), `pytest`, `ruff` |
 | **8** | `mufettis` | Bağımsız Denetçi | `skills/guvenlik-ve-denetim` | `bin/mufettis.py` |

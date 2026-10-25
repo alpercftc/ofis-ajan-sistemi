@@ -3,7 +3,7 @@ name: evrak-isleme
 description: PDF, Word (.docx) ve görselleri bağlamı şişirmeden yapılandırılmış temiz Markdown formatına dönüştürme kuralları.
 kaynak: https://github.com/microsoft/markitdown ve https://github.com/pymupdf/PyMuPDF
 lisans: MIT
-takimlar: [staj-burosu, dekan-sekreteri]
+takimlar: [staj-burosu, dekan-sekreteri, memur]
 ---
 
 # Evrak İşleme Yeteneği

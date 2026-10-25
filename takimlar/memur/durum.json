@@ -9,5 +9,9 @@
     "red_sayisi_7g": 0
   },
   "defter_son_ders": null,
-  "sayaclar": {}
+  "sayaclar": {
+    "incelenen_dosya": 0,
+    "hazirlanan_taslak": 0,
+    "eksik_evrak_uyarisi": 0
+  }
 }
