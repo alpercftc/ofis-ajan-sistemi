@@ -1,17 +1,17 @@
 {
   "takim": "dekan-sekreteri",
   "durum": "bosta",
-  "son_kosu": null,
-  "son_sonuc": null,
+  "son_kosu": "2026-10-25 22:45",
+  "son_sonuc": "basarili",
   "kuyruk": [],
   "mufettis": {
     "son_karar": null,
     "red_sayisi_7g": 0
   },
-  "defter_son_ders": null,
+  "defter_son_ders": "2026-10-25: YÖ-103 üst yönerge olup GMİM için Madde 18 gereği bölüm staj uygulama esasları amir hükümdür.",
   "sayaclar": {
-    "derlenen_belge": 0,
-    "tekil_kural_sayisi": 0,
+    "derlenen_belge": 11,
+    "tekil_kural_sayisi": 25,
     "bolumlu_kilavuz_sayisi": 0
   }
 }

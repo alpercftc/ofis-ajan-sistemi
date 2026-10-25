@@ -1,0 +1,74 @@
+{
+  "dokuman": "FR-1323 - Staj Sicil Formu",
+  "referans_boyut": {
+    "genislik": 595.32,
+    "yukseklik": 841.92,
+    "format": "A4"
+  },
+  "bolgeler": {
+    "1_fotograf": {
+      "tanim": "Sağ üst öğrenci vesikalık fotoğraf alanı",
+      "oranlar": [0.7307, 0.0725, 0.9474, 0.2827],
+      "koordinatlar_pt": [435.0, 61.0, 564.0, 238.0],
+      "anchor_text": ["FOTOĞRAF", "FOTOGRAF", "1)"]
+    },
+    "2_tarih": {
+      "tanim": "Staj Başlama - Bitiş Tarihi kısmı (örn. 10/08/2026 - 31/08/2026)",
+      "oranlar": [0.2889, 0.2791, 0.5325, 0.2993],
+      "koordinatlar_pt": [172.0, 235.0, 317.0, 252.0],
+      "anchor_text": ["Staj Başlama - Bitiş Tarihi", "Staj Başlama", "TARİH"]
+    },
+    "3_gun_sayisi": {
+      "tanim": "Çalıştığı Gün Sayısı kutusu (örn. 19)",
+      "oranlar": [0.6551, 0.2791, 0.8231, 0.2993],
+      "koordinatlar_pt": [390.0, 235.0, 490.0, 252.0],
+      "anchor_text": ["Çalıştığı Gün Sayısı", "GÜN SAYISI", "3)"]
+    },
+    "4_ogrenci_imzasi": {
+      "tanim": "Öğrencinin İmzası kutusu",
+      "oranlar": [0.7895, 0.3207, 0.9407, 0.3682],
+      "koordinatlar_pt": [470.0, 270.0, 560.0, 310.0],
+      "anchor_text": ["Öğrencinin İmzası", "Öğrencinin", "4)"]
+    },
+    "5_idari_personel_imzasi": {
+      "tanim": "İlgiliye bölümü altındaki fakülte/bölüm yetkilisi (Saygılarımla, İmza) alanı",
+      "oranlar": [0.5627, 0.5107, 0.9239, 0.5761],
+      "koordinatlar_pt": [335.0, 430.0, 550.0, 485.0],
+      "anchor_text": ["İDARİ PERSONEL İMZASI", "Saygılarımla", "5)"]
+    },
+    "6_firma_imza_kase": {
+      "tanim": "Kurum Yetkilisi / Mühendis altındaki Tarih - İmza ve Firma Kaşesi alanı",
+      "oranlar": [0.5711, 0.7542, 0.9239, 0.8492],
+      "koordinatlar_pt": [340.0, 635.0, 550.0, 715.0],
+      "anchor_text": ["Kurum Yetkilisi / Mühendis", "Tarih - İmza", "Firma Kaşesi", "6)"]
+    },
+    "7_kabul_gun_ve_tur": {
+      "tanim": "Öğrencinin ....... iş günü .................... stajı kabul edilmiştir /edilmemiştir cümlesi",
+      "oranlar": [0.0625, 0.8611, 0.6215, 0.8861],
+      "koordinatlar_pt": [37.2, 725.0, 370.0, 746.0],
+      "kabul_gun": {
+        "oranlar": [0.1411, 0.8647, 0.1848, 0.8837],
+        "koordinatlar_pt": [84.0, 728.0, 110.0, 744.0]
+      },
+      "staj_turu": {
+        "oranlar": [0.2318, 0.8647, 0.3779, 0.8837],
+        "koordinatlar_pt": [138.0, 728.0, 225.0, 744.0]
+      },
+      "anchor_text": ["kabul edilmiştir", "iş günü", "stajı kabul"]
+    },
+    "8_karar_cizgi": {
+      "tanim": "edilmiştir /edilmemiştir ifadesinde onay durumunda edilmemiştir kelimesinin üstünün yatay çizgiyle çizileceği alan",
+      "oranlar": [0.5224, 0.8683, 0.6148, 0.8837],
+      "koordinatlar_pt": [311.0, 731.0, 366.0, 744.0],
+      "cizgi_baslangic_oran": [0.5224, 0.8760],
+      "cizgi_bitis_oran": [0.6148, 0.8760],
+      "anchor_text": ["/edilmemiştir", "edilmemiştir"]
+    },
+    "9_komisyon_uyesi_imza": {
+      "tanim": "Sol alttaki Komisyon Üyesi / Öğretim Üyesi alanı (imza.png buraya basılır, sağdaki Komisyon Başkanı alanı boş bırakılır)",
+      "oranlar": [0.1932, 0.8968, 0.4787, 0.9680],
+      "koordinatlar_pt": [115.0, 755.0, 285.0, 815.0],
+      "anchor_text": ["Komisyon Üyesi", "Öğretim Üyesi", "9) ALPERİN PNG"]
+    }
+  }
+}

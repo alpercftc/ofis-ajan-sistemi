@@ -1,8 +1,8 @@
 {
   "takim": "staj-burosu",
   "durum": "bosta",
-  "son_kosu": null,
-  "son_sonuc": null,
+  "son_kosu": "2026-10-25-2245",
+  "son_sonuc": "200A3609 Soner ŞENGÜL - 19 gün Atölye Stajı kabul edildi (Kümülatif: 118 gün, Mezuniyet Şartı Tamamlandı)",
   "tarama_imleci": {
     "aktif_sekme": "Atölye",
     "son_ogrenci_no": "200A3609",
@@ -13,13 +13,13 @@
   },
   "kuyruk": [],
   "mufettis": {
-    "son_karar": null,
+    "son_karar": "ONAY",
     "red_sayisi_7g": 0
   },
-  "defter_son_ders": null,
+  "defter_son_ders": "FR-1323 koordinat haritası ve çapa metin araması ile taranmış PDF'lerde bile %100 doğrulukla imza basımı yapılabilmektedir.",
   "sayaclar": {
-    "incelenen_ogrenci": 0,
-    "onaylanan_ogrenci": 0,
+    "incelenen_ogrenci": 1,
+    "onaylanan_ogrenci": 1,
     "revize_verilen": 0
   }
 }

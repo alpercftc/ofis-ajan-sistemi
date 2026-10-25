@@ -13,14 +13,17 @@ sirket/arsiv/ogrenciler/*
 # Geçici Öğrenci Evrakları ve ZIP İçerikleri
 *.zip
 *.pdf
+*.doc
 *.docx
 *.jpg
 *.jpeg
 *.png
 
-# Ajan Çıktıları ve Geçici Raporlar
+# Ajan Çıktıları, Koşu Logları ve Gelen Mesaj Kuyruğu
 takimlar/*/cikti/*
 !takimlar/*/cikti/.gitkeep
+takimlar/*/gelen/*
+!takimlar/*/gelen/.gitkeep
 
 # Python Önbellek ve Test Dosyaları
 __pycache__/
