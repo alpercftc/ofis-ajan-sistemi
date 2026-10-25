@@ -9,5 +9,10 @@
     "red_sayisi_7g": 0
   },
   "defter_son_ders": null,
-  "sayaclar": {}
+  "sayaclar": {
+    "denetlenen_cikti": 0,
+    "onay_sayisi": 0,
+    "red_sayisi": 0,
+    "edevlet_dogrulama_sayisi": 0
+  }
 }
