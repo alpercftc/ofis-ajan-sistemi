@@ -35,4 +35,4 @@ Ajan kimliklerinde sabit model yazılmaz; soyut seviyeler (`yuksek`, `orta`, `hi
 2. Alper'in açık Telegram/masaüstü onayı olmadan dışarıya e-posta göndermek veya resmi belge imzalamak.
 3. Para harcamak veya yetkisiz dış servis aboneliği açmak.
 4. `ANAYASA.md` ve `kurallar.md` dosyalarını ajanların kendi kendine değiştirmesi.
-5. Otonom koşan ofis alt ajanlarının (`bin/kos.py`) Alper'in açık talimatı olmadan `C:\Alper\vBeyin` içine kendiliğinden dosya yazması (alt ajanlar vBeyin'den yalnızca okuma yapabilir; vBeyin güncellemeleri yalnızca Alper'in açık oturum talimatıyla yapılır).
+5. `C:\Alper\vBeyin` içine dosya yazmak/değiştirmek (vBeyin kesinlikle ve istisnasız salt-okunurdur; ofis ajanları oraya asla yazamaz, yalnızca okuma yapabilir).
