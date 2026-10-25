@@ -20,7 +20,7 @@ Farklı model ailesi erişimi yoksa yedek yol aynı aileden küçük bir modeldi
 ## 4 · Her Koşunun Tavanı ve Anında Temizlik Var
 Staj değerlendirmelerinde `1 Koşu = 1 Öğrenci` atomik kuralı geçerlidir; her koşunun güvenlik zaman aşımı üst tavanı 15 dakikadır (`KOSU_SURESI_SN = 900`) ve bir öğrenci biter bitmez beklemeden sıradakine geçilir.
 Tavana çarpan veya hata alan koşu `durum.json` dosyasına hatasını yazar, asla sessiz kalmaz.
-Stajı onaylanan öğrencinin indirilen `.zip`, açılan `.pdf`/`.docx`/`.jpg` ve geçici `.md` dosyaları diskte bekletilmeden anında silinir; her öğrenci için çoklu staj geçmişini tutan yalnızca tek bir profil kartı (`sirket/arsiv/ogrenciler/<ogrenci_no>.md`) saklanır.
+Stajı incelenen ve imzalanan öğrencinin doldurulmuş/imzalanmış `FR-1323` Staj Sicil Formu ile ilgili PDF/defter dosyaları (`sirket/arsiv/gecici/<ogrenci_no>/`), Alper imzalı formu kontrol edip son onayı vererek Komisyon Başkanına (`ahmkaya@yildiz.edu.tr`) e-posta (PDF ekleriyle birlikte) fiilen gönderilene kadar **asla silinmez**. E-posta gönderimi tamamlandıktan ve Kişisel Tablo yeşile boyandıktan hemen sonra geçici `.zip`, `.pdf`, `.docx`, `.jpg` ve `.md` dosyaları silinir; kalıcı olarak yalnızca öğrenci profil kartı (`sirket/arsiv/ogrenciler/<ogrenci_no>.md`) saklanır.
 
 ## 5 · Defter Ajanın, Kural İnsanın
 Her ajan kendi `defter.md` dosyasına önceki koşulardan ve Alper'in revizyonlarından öğrendiği dersleri yazar; ancak `kurallar.md` ve `ANAYASA.md` yalnızca Alper tarafından (veya Alper'in emriyle) değiştirilir.

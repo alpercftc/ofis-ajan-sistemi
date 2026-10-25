@@ -20,7 +20,7 @@ butce_usd: 0
 3. `skills/ses-ve-iletisim/SKILL.md` şablonuyla tüm bekleyen işleri tek bir **Birleşik Gündem** (`takimlar/dekan/cikti/YYYY-MM-DD-gundem.md`) halinde derle: yeni atanan staj defterleri (analiz onayı bekleyenler), incelenmiş staj onay kartları (`[ 📁 STAJ DEFTERLERİNİ AÇ ]`, `[ 📂 KLASÖRÜ PC'DE AÇ ]`), acil e-postalar ve idari evraklar.
 4. Alper'den gelen doğal dil veya buton komutlarını ayrıştır:
    - "İncele / Başla" -> ilgili öğrencileri `staj-burosu` kuyruğuna `analiz_bekliyor` olarak yaz.
-   - "Onayla / <N> gün kabul et / Revize ver" -> kararı `staj-burosu` kuyruğuna `onaylandi` veya `revize` olarak düşür.
+   - "Onayla ve İmzala / <N> gün kabul et / Revize ver" -> kararı `staj-burosu` kuyruğuna `imza_bekliyor` veya `revize` olarak düşür; imzalanmış `FR-1323` formu hazırlandığında Alper'e önizleme ve `[ ✉️ KOMİSYON BAŞKANINA (ahmkaya@yildiz.edu.tr) MAİL AT VE KAPAT ]` onayı sun. E-posta PDF ekleriyle gönderilene kadar geçici dosyalar silinmez.
    - `/platform <ad>` veya model seviyesi değişikliği -> `sirket/model-haritasi.json` ve `bin/ayar.py` üzerinden güncelle.
 5. İşlenen gündem maddelerini `durum.json`'da `tamam` yap.
 6. `defter.md`'ye Alper'in yönetim tercihlerinden en fazla **bir** ders ekle.
