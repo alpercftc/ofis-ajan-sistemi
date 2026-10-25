@@ -16,7 +16,7 @@ butce_usd: 0
   2. Alper'in bilgisayarında belirttiği herhangi bir dosya yolu, veya
   3. `sirket/mevzuat/ham/` klasörüne bırakılan belgeler.
 - **Çıktı (İki Modlu):**
-  - **Mod A — Varsayılan Tekil Kural Modu (`--mod tekil`):** Staj yönergesi gibi her koşuda okunacak kurallar için tek bir `.md` dosyası (`sirket/mevzuat/staj-kurallari.md` vb.).
+  - **Mod A — Varsayılan Tekil Kural Modu (`--mod tekil`):** **GMİM Staj Uygulama Esasları** (veya genel Staj Yönergesi) gibi her koşuda okunacak kurallar için tek bir `.md` dosyası (`sirket/mevzuat/staj-kurallari.md` vb.).
   - **Mod B — Bölümlü & İndeksli Kılavuz Modu (`--mod bolumlu`):** Alper "Bu denetim kılavuzu / Bölümlere ayır" dediğinde `sirket/mevzuat/<dokuman_adi>/` klasörü altında:
     - `index_<dokuman_adi>.md`: İçindekiler, her bölümün kapsam özeti, aranan bilginin hangi bölümde bulunduğunu gösteren anahtar kavramlar, çapraz referanslar ve bölüm `.md` dosyasının tam adresi.
     - `bolum-01-<slug>.md`, `bolum-02-<slug>.md` ...: Her bölümün/chapter'ın kendi sayfa referanslarıyla ayrılmış bağımsız `.md` dosyaları.

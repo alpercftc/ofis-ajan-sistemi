@@ -18,7 +18,7 @@ takimlar: [dekan-sekreteri, memur]
 ## 1. İki Modlu Derleme Standardı
 
 ### Mod A · Varsayılan Tekil Kural Modu (`--mod tekil`)
-Staj yönergesi gibi her koşuda tamamı kontrol edilen kısa kurallar için tek bir `.md` dosyası (`sirket/mevzuat/staj-kurallari.md`) üretilir:
+**GMİM Staj Uygulama Esasları** (Gemi Makineleri İşletme Mühendisliği Bölümü staj kuralları) ve genel Staj Yönergesi gibi her koşuda tamamı kontrol edilen kurallar için tek bir `.md` dosyası (`sirket/mevzuat/staj-kurallari.md`) üretilir:
 - `KURAL_ID` ve Konu Başlığı
 - `ZORUNLU_SARTLAR` (`EĞER / İSE` atomik kural cümlesi + `[Madde X, Sayfa Y]`)
 - `GECERSIZLIK_HALLERI` ve `ESNEKLIK_ALANI` (Alper'in inisiyatifinde olanlar)
