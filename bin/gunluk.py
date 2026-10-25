@@ -57,13 +57,28 @@ def sabah_raporu(kok=None, kuru: bool = False) -> str:
     kok = Path(kok or KOK)
     an = datetime.now().astimezone()
     gun_adi = GUNLER[an.weekday()]
+
+    # 1. Staj Bürosu: Ortak Tablodaki yeni Atölye staj defterlerini otomatik tara ve senkronize et (0-token)
+    staj_durumu = "atlandı (kuru mod)"
+    if not kuru:
+        try:
+            import staj_senkron
+            senk_sonuc = staj_senkron.senkron_kontrol()
+            yeni_sayisi = len(senk_sonuc.get("yeni_eklenenler", []))
+            staj_durumu = f"{yeni_sayisi} yeni defter atandı" if yeni_sayisi else "yeni atanan defter yok"
+        except Exception as e:
+            staj_durumu = f"senkron hatası: {e}"
+
+    # 2. Dağıtıcı: Bekleyen kuyruk maddelerini ve zinciri işlet
     sonuc = dagitici.dagit(kok, an, kuru=kuru)
     aktarilan = len(sonuc.get("zincir") or [])
+
     satirlar = [
         f"# 🌅 Sabah Ofis Özeti — {an:%Y-%m-%d} ({gun_adi})",
         "",
         f"- **Mesai Saatleri:** `{ayar.MESAI_METNI}`",
         f"- **Aktif Platform:** `{ayar.platform_al()}`",
+        f"- **Atölye Staj Senkronu:** `{staj_durumu}`",
         f"- **Dağıtıcı Aktarılan İş:** `{aktarilan}` {'(kuru mod)' if kuru else ''}",
         "",
         "## Birim Durum Tablosu",
