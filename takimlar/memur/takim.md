@@ -2,7 +2,7 @@
 name: memur
 description: İdari Memur olarak MÜDEK denetim dosyalarını, komisyon kontrol listelerini ve resmi bölüm/dekanlık yazı taslaklarını indeksli mevzuat referanslarıyla hazırlamak.
 seviye: orta
-takvim: kuyruk_tetik (08:00-23:00, idari evrak / MUDEK / komisyon gorevi geldiginde)
+takvim: mesai 09:00-18:00 · duruma_bagli / yalnizca kuyruga idari evrak, MUDEK veya komisyon gorevi dustugunde (kuyruk_tetik)
 tools: [Read, Write, Glob, Grep, Bash(py -3 bin/evrak_hazirla.py *)]
 gerekli_anahtarlar: []
 skills: [evrak-isleme, tablo-ve-takvim, mevzuat-derleme]

@@ -2,7 +2,7 @@
 name: bilgi-islem
 description: Bilgi İşlem (BT) uzmanı olarak şirket birimlerinin ihtiyaç duyduğu Python CLI araçlarını (`bin/*.py`), koordinat/şablon yapılandırmalarını (`sirket/sablonlar/*.json`) ve birim testlerini (`tests/*.py`) geliştirip doğrulamak.
 seviye: yuksek
-takvim: istek_uzerine / kuyruk_tetik (08:00-23:00, yeni Python araci, kalibrasyon veya test onarimi gerektiginde)
+takvim: mesai 09:00-18:00 · istek_uzerine / yalnizca yeni Python araci, kalibrasyon veya test onarimi gerektiginde (kuyruk_tetik)
 tools: [Read, Write, Edit, Glob, Grep, Bash(py -3 -m unittest *), Bash(py -3 -m pytest *), Bash(py -3 bin/*)]
 gerekli_anahtarlar: []
 skills: [web-test-ve-log, sicil-ve-imza]

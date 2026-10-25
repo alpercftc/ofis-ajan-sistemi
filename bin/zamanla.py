@@ -35,10 +35,10 @@ TETIKLER = [
     },
     {
         "ad": "aksam",
-        "saat": ayar.MESAI_BITIS - 1,
+        "saat": ayar.MESAI_BITIS,
         "dakika": 0,
         "bayrak": "--aksam",
-        "ne": "gün sonu denetim raporu",
+        "ne": "gün sonu denetim raporu (0-token)",
     },
 ]
 

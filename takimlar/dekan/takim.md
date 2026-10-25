@@ -2,7 +2,7 @@
 name: dekan
 description: Dekan ve ana orkestratör olarak tüm birimlerin Müfettiş'ten geçmiş çıktılarını tek bir Birleşik Gündem'de Alper'e sunmak, Alper'in onay/revizyon/model komutlarını ilgili birimlere dağıtmak ve şirketin tek muhatabı olmak.
 seviye: yuksek
-takvim: her gun 08:00 (sabah acilis), 22:00 (aksam kapanis) ve kuyruk_tetik (08:00-23:00 anlik)
+takvim: mesai 09:00-18:00 · telegram_dinle (0-token) yeni mesaj yakaladiginda anlik, sabah 09:00 / aksam 18:00 veya alt birim kuyruga is biraktiginda
 tools: [Read, Write, Glob, Grep, Bash(py -3 bin/dagitici.py *), Bash(py -3 bin/staj_senkron.py *), Bash(py -3 bin/ayar.py *)]
 gerekli_anahtarlar: [TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]
 skills: [ses-ve-iletisim, tablo-ve-takvim, guvenlik-ve-denetim]

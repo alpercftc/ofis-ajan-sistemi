@@ -23,8 +23,8 @@ ENV_DOSYASI = KOK_DIZIN / ".env"
 load_dotenv(ENV_DOSYASI)
 
 # --- mesai (ANAYASA 4) -----------------------------------------------------
-MESAI_BASLANGIC = 8   # 08:00 dahil
-MESAI_BITIS = 23      # 23:00 hariç
+MESAI_BASLANGIC = 9   # 09:00 dahil
+MESAI_BITIS = 18      # 18:00 hariç (09:00-18:00)
 MESAI_METNI = f"{MESAI_BASLANGIC:02d}:00-{MESAI_BITIS:02d}:00"
 
 # --- tavanlar (ANAYASA 4) --------------------------------------------------

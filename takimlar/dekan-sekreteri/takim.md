@@ -2,7 +2,7 @@
 name: dekan-sekreteri
 description: Dekan Sekreteri olarak Alper'in doğrudan sohbet/Telegram üzerinden attığı veya klasöre bıraktığı mevzuat ve kılavuz belgelerini iki modlu (varsayılan tekil kural .md dosyası veya token tasarruflu index_<dokuman>.md + bölüm .md ağacı) olarak derlemek.
 seviye: yuksek
-takvim: olay_bazli / kuyruk_tetik (08:00-23:00, yeni mevzuat/yonerge/kilavuz belgesi geldiginde)
+takvim: mesai 09:00-18:00 · olay_bazli / yalnizca yeni mevzuat veya kilavuz PDF belgesi geldiginde (kuyruk_tetik)
 tools: [Read, Write, Glob, Grep, Bash(py -3 bin/evrak_hazirla.py *)]
 gerekli_anahtarlar: []
 skills: [mevzuat-derleme, evrak-isleme]

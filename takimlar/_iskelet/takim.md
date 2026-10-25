@@ -2,7 +2,7 @@
 name: TAKIM
 description: TAKIM birimi — (tek cümle: ne girer, ne çıkar)
 seviye: orta
-takvim: kuyruk_tetik (08:00-23:00)
+takvim: mesai 09:00-18:00 · yalnizca kuyrukta bekleyen is oldugunda (kuyruk_tetik)
 tools: [Read, Write, Glob, Grep]
 gerekli_anahtarlar: []
 skills: []

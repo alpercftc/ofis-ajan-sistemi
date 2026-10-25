@@ -2,7 +2,7 @@
 name: postaci
 description: Postacı birimi olarak Alper'in kurumsal YTÜ ve kişisel Gmail gelen kutularını ve Telegram sesli/yazılı mesajlarını taramak, acil akademik/staj maillerini sınıflandırmak ve dışarıya hiçbir e-posta göndermeden yanıt taslaklarını hazırlamak.
 seviye: hizli
-takvim: her gun 08:00 (sabah taramasi), mesai ici saatlik_tarama (08:00-23:00) ve telegram_dinle ile anlik
+takvim: mesai 09:00-18:00 · saat basi (posta_cek.py 0-token yeni e-posta bulursa) veya Telegram'dan yeni gorev geldiginde
 tools: [Read, Write, Glob, Grep, Bash(py -3 bin/posta_cek.py *)]
 gerekli_anahtarlar: [KURUMSAL_EMAIL, GMAIL_USER, GMAIL_APP_PASSWORD, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]
 skills: [ses-ve-iletisim, tablo-ve-takvim]
