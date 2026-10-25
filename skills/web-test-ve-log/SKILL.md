@@ -3,6 +3,7 @@ name: web-test-ve-log
 description: Araç geliştirme standartları (typer), pytest birim test zorunluluğu, ruff linter kuralları ve endüstriyel metin log standartları.
 kaynak: https://github.com/fastapi/typer ve https://github.com/pytest-dev/pytest
 lisans: MIT
+takimlar: [ik-memuru, bilgi-islem]
 ---
 
 # Web, Test ve Log Yeteneği
