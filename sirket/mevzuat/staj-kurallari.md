@@ -209,12 +209,22 @@ Bu 5 kriter, her öğrenci staj koşusunda `staj-burosu` ve `mufettis` tarafınd
 - **KURAL_ID:** `KURAL-25`
 - **ZORUNLU_SARTLAR:** Staj sırasında iş kazası, meslek hastalığı veya istirahat raporu alınması durumunda, 5510 Sayılı Kanunun ağır idari para cezalarının önlenmesi amacıyla durumun **azami 2 gün içerisinde** Bölüm Staj Bürosuna ve Dekanlığa bildirilmesi zorunludur. `[GMİM Staj Esasları Madde 13, Sayfa 9]`
 
-### KURAL-26: İmzalı Sicil Formu Onayı, Komisyon Başkanına Gönderim ve Silme Zamanlaması
+### KURAL-26: İmzalı Sicil Formu Onayı, Komisyon Başkanına Toplu/Tekil Gönderim ve Silme Zamanlaması
 - **KURAL_ID:** `KURAL-26`
 - **ZORUNLU_SARTLAR:**
-  - Öğrencinin stajı uygun bulunduğunda `FR-1323` Staj Sicil Formu üzerine kabul edilen gün sayısı, staj türü (`Atölye` / `Uzakyol`), `/edilmemiştir.` üstü çizgisi ve Komisyon Üyesi (Alper ÇİFTÇİ) şeffaf imzası basılarak `sirket/arsiv/gecici/<ogrenci_no>/` altında hazır bekletilir.
+  - Öğrencinin stajı uygun bulunduğunda `FR-1323` Staj Sicil Formu üzerine kabul edilen gün sayısı, staj türü (`Atölye` / `Uzakyol`), `/edilmemiştir.` üstü çizgisi ve Komisyon Üyesi (Alper ÇİFTÇİ) şeffaf imzası basılarak staj defteri dosyası isimlendirme formatında (`<OgrenciNo>_<Ad>_<Soyad>_FR-1323.pdf`, örn. `200A3609_Soner_SENGUL_FR-1323.pdf`) `sirket/arsiv/gecici/<ogrenci_no>/` altında hazır bekletilir.
   - İmzalanıp doldurulan form, Komisyon Başkanına (`ahmkaya@yildiz.edu.tr`) e-posta atılmadan önce **mutlaka Alper'in görsel kontrolüne ve e-posta gönderim onayına** sunulur.
-  - İlgili geçici dosyalar (imzalı `FR-1323` PDF'i, staj defteri ve maile eklenecek diğer PDF belgeleri), **e-posta PDF ekleriyle birlikte Komisyon Başkanına (`ahmkaya@yildiz.edu.tr`) fiilen gönderilene kadar kesinlikle silinmez**; temizlik işlemi yalnızca e-posta gönderimi tamamlandıktan sonra yapılır. `[Alper Özel Ofis Kuralı & ANAYASA Madde 1-4]`
+  - **Tek E-Postada Toplu Ek Kuralı:** Birden fazla öğrencinin stajı onaylandığında Komisyon Başkanına (`ahmkaya@yildiz.edu.tr`) tek tek e-posta atılmaz; onaylanan tüm öğrencilerin yalnızca imzalı **Staj Sicil Formu PDF'leri** (`<OgrenciNo>_<Ad>_<Soyad>_FR-1323.pdf`) **tek bir e-posta altında** topluca eklenir (tek öğrenci onaylandıysa tek form eklenir; staj defteri veya diğer evraklar maile eklenmez).
+  - **Standart E-Posta Üslubu (`ahmkaya@yildiz.edu.tr`):**
+    ```text
+    Merhaba Ahmet Hocam,
+
+    Atölye staj defterlerini onayladığım öğrencilerin staj sicil formlarını ekliyorum.
+
+    İyi çalışmalar.
+    ```
+    *(Tek öğrenci ise: "Atölye staj defterini onayladığım öğrencinin staj sicil formunu ekliyorum.")*
+  - İlgili geçici dosyalar (`sirket/arsiv/gecici/<ogrenci_no>/`), **imzalı staj sicil formu PDF'i Komisyon Başkanına (`ahmkaya@yildiz.edu.tr`) e-posta ile fiilen gönderilene kadar kesinlikle silinmez**; temizlik işlemi yalnızca e-posta gönderimi tamamlandıktan sonra yapılır. `[Alper Özel Ofis Kuralı & ANAYASA Madde 1-4]`
 
 ---
 

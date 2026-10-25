@@ -198,8 +198,8 @@ def sicil_imzala_ve_tamamla(
 
     page.draw_line(p1, p2, color=(0.85, 0.0, 0.0), width=1.6)
 
-    # 3. 9_komisyon_uyesi_imza: Şeffaf PNG İmzayı Yerleştirme
-    imza_oran = b9.get("oranlar", [0.1932, 0.8968, 0.4787, 0.9680])
+    # 3. 9_komisyon_uyesi_imza: Şeffaf PNG İmzayı Yerleştirme (':' işaretlerinin sağına, +w_imza/2 = +37.5 pt kaydırılmış)
+    imza_oran = b9.get("oranlar", [0.2450, 0.8530, 0.4340, 0.9268])
     imza_rect = fitz.Rect(imza_oran[0] * w, imza_oran[1] * h, imza_oran[2] * w, imza_oran[3] * h)
 
     komisyon_arama = (
@@ -211,9 +211,9 @@ def sicil_imzala_ve_tamamla(
     if alt_komisyon:
         k_rect = alt_komisyon[0]
         imza_rect = fitz.Rect(
-            k_rect.x1 + 15,
+            k_rect.x1 + 52.5,
             k_rect.y0 - 4,
-            min(w * 0.48, k_rect.x1 + 165),
+            min(w * 0.52, k_rect.x1 + 202.5),
             min(h * 0.96, k_rect.y0 + 58),
         )
 

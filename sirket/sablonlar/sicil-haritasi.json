@@ -65,9 +65,9 @@
       "anchor_text": ["/edilmemiştir", "edilmemiştir"]
     },
     "9_komisyon_uyesi_imza": {
-      "tanim": "Sol alttaki Komisyon Üyesi / Öğretim Üyesi alanı (imza.png buraya basılır, sağdaki Komisyon Başkanı alanı boş bırakılır)",
-      "oranlar": [0.1932, 0.8968, 0.4787, 0.9680],
-      "koordinatlar_pt": [115.0, 755.0, 285.0, 815.0],
+      "tanim": "Sol alttaki Komisyon Üyesi / Öğretim Üyesi alanı (imza.png ':' işaretlerinin sağına basılır, sağdaki Komisyon Başkanı alanı boş bırakılır)",
+      "oranlar": [0.2450, 0.8530, 0.4340, 0.9268],
+      "koordinatlar_pt": [145.85, 718.12, 258.35, 780.12],
       "anchor_text": ["Komisyon Üyesi", "Öğretim Üyesi", "9) ALPERİN PNG"]
     }
   }
