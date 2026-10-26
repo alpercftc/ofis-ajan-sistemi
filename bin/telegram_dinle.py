@@ -74,25 +74,27 @@ def dekan_yaniti_uret(metin: str) -> str:
     if any(k in m for k in ["staj", "defter", "kac adet", "okunmayan", "revize", "listele", "atanan"]):
         try:
             ozet = staj_senkron.kisisel_tablo_durum_listele()
-            okunmayan = len(ozet.get("okunmamis") or [])
-            revize = len(ozet.get("revize_bekleyen") or [])
-            kaynak = ozet.get("kaynak") or "online tablo"
+            okunmayan = ozet.get("okunmamis") or []
+            revize = ozet.get("revize_bekleyen") or []
 
-            ornek = ""
-            if okunmayan > 0:
-                ornek = "\n\n*Bekleyen İlk Öğrenciler:*\n" + "\n".join([f"• {o.get('ogrenci_no')} - {o.get('ad_soyad')}" for o in ozet.get("okunmamis", [])[:5]])
-                if okunmayan > 5:
-                    ornek += f"\n_...ve {okunmayan - 5} öğrenci daha_"
+            satirlar = [
+                "🏛️ *Dekanlık — Staj Durum Raporu*",
+                "",
+                "Alper Bey, Kişisel Tablonuz (`Atölye` sekmesi) tam dökümü:",
+                "",
+                f"🟡 *REVİZYON BEKLEYENLER ({len(revize)} Adet):*"
+            ]
+            for r in revize:
+                satirlar.append(f"• *{r.get('ogrenci_no')}* - {r.get('ad_soyad')} | Not: _{r.get('not_metni')}_")
 
-            return (
-                f"🏛️ *Dekanlık — Staj Durum Raporu*\n\n"
-                f"Alper Bey, Kişisel Tablonuz (`Atölye` sekmesi) güncel durumu:\n"
-                f"• *Okunmamış Defter:* `{okunmayan}` adet\n"
-                f"• *Revize Bekleyen:* `{revize}` adet\n"
-                f"• *Kaynak:* `{kaynak}`"
-                f"{ornek}\n\n"
-                f"İncelemeyi başlatmak için *'İncele'* veya *'Başla'* emri verebilirsiniz."
-            )
+            satirlar.append("")
+            satirlar.append(f"⚪ *OKUNMAYAN DEFTERLER ({len(okunmayan)} Adet):*")
+            for o in okunmayan:
+                satirlar.append(f"• Satır {o.get('satir')}: *{o.get('ogrenci_no')}* - {o.get('ad_soyad')}")
+
+            satirlar.append("")
+            satirlar.append("İncelemeyi başlatmak için *'<ÖğrenciNo> İncele'* veya *'Başla'* emri verebilirsiniz.")
+            return "\n".join(satirlar)
         except Exception as e:
             return f"🏛️ *Dekanlık:* Staj tablosu sorgulanırken hata oluştu: {e}"
 
@@ -134,7 +136,7 @@ def tek_tur(kok, token, chat_id, bekleme=BEKLEME_SN):
         update_id = mesaj.get("update_id")
         _log(kok, f"Yeni mesaj: {update_id} -> Dekan devraldı: {metin}")
 
-        # 1. Anında Alper'e Dekan olarak teyit ve yanıt gönder
+        # 1. Anında Alper'e Dekan olarak yanıt gönder
         try:
             yanit = dekan_yaniti_uret(metin)
             telegram_oku.mesaj_gonder(token, chat_id, yanit)
