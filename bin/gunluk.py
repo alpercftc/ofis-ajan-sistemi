@@ -165,6 +165,12 @@ def aksam_raporu(kok=None, kuru: bool = False) -> str:
         except Exception:
             pass
 
+        try:
+            import senkron
+            senkron.senkron_gonder(f"aksam: gun sonu otomatik yedekleme ({an:%Y-%m-%d})")
+        except Exception as e:
+            print(f"[UYARI] Aksam git senkronizasyon hatasi: {e}", file=sys.stderr)
+
     return metin
 
 
