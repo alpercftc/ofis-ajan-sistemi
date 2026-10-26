@@ -47,6 +47,37 @@ def _online_xlsx_indir(sheet_id: str):
     return None
 
 
+def senkron_kontrol(kisisel_yol: Optional[Path] = None, ortak_id: str = ORTAK_SHEET_ID) -> Dict:
+    """gunluk.py ve ofis_baslat.py tarafından çağrılan 0-token senkronizasyon wrapper'ı."""
+    imlec = tarama_imleci_oku()
+    # Ortak tabloyu online çekmeyi dene
+    yeni_eklenenler = []
+    if ortak_id:
+        wb = _online_xlsx_indir(ortak_id)
+        if wb and AKTIF_SEKME in wb.sheetnames:
+            ws = wb[AKTIF_SEKME]
+            satirlar = []
+            for row in ws.iter_rows(min_row=2, values_only=True):
+                if not row or not any(row):
+                    continue
+                # Standart sütun eşlemesi: A: Not, B: Tarih/Zaman, C: Öğrenci No, D: Ad Soyad, vb.
+                satirlar.append({
+                    "zaman_damgasi": str(row[1] or ""),
+                    "ogrenci_no": str(row[2] or ""),
+                    "ad_soyad": str(row[3] or ""),
+                    "yetkili": str(row[10] or "") if len(row) > 10 else "",
+                })
+            yeni_eklenenler = ortak_tablodan_yeni_atananlari_suz(satirlar, imlec)
+            if yeni_eklenenler:
+                son = yeni_eklenenler[-1]
+                tarama_imleci_guncelle(
+                    son_ogrenci_no=son.get("ogrenci_no"),
+                    son_ogrenci_ad=son.get("ad_soyad"),
+                    son_zaman_damgasi=son.get("zaman_damgasi"),
+                )
+    return {"yeni_eklenenler": yeni_eklenenler}
+
+
 def durum_oku(durum_yolu: Path = STAJ_DURUM_YOLU) -> dict:
     if not durum_yolu.exists():
         return {"takim": "staj-burosu", "tarama_imleci": {}, "kuyruk": []}

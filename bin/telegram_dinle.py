@@ -177,9 +177,24 @@ def main(argv) -> int:
         tek_tur(KOK, token, chat_id, bekleme=0)
         return 0
     _log(KOK, f"dinleyici başladı (varsayılan={TAKIM}, long-poll={BEKLEME_SN}sn)")
+    son_posta_kontrol = 0.0
     try:
         while True:
             tek_tur(KOK, token, chat_id, bekleme=BEKLEME_SN)
+            # Her 15 dakikada bir (900 sn) 0-token yeni e-posta kontrolü
+            simdi = time.time()
+            if ayar.mesaide_mi() and (simdi - son_posta_kontrol >= 900):
+                son_posta_kontrol = simdi
+                try:
+                    subprocess.run(
+                        [sys.executable, str(Path(KOK) / "bin" / "posta_cek.py"), "--son"],
+                        cwd=str(KOK),
+                        capture_output=True,
+                        text=True,
+                        timeout=30,
+                    )
+                except Exception as e:
+                    _log(KOK, f"periyodik eposta kontrol hatası: {e}")
             time.sleep(TUR_ARASI_SN)
     except KeyboardInterrupt:
         _log(KOK, "dinleyici durdu (SIGINT)")
