@@ -146,6 +146,16 @@ def tek_tur(kok, token, chat_id, bekleme=BEKLEME_SN, kosucu=None):
         hedefler.setdefault(hedef, []).append(madde_id)
     if not hedefler:
         return []
+
+    # 1. Kullan?c?ya mesaj?n?n al?nd???na dair anl?k Telegram teyidi g?nder
+    if token and chat_id:
+        try:
+            for hedef, maddeler in hedefler.items():
+                alinan_bilgi = f"?? *Mesaj?n?z Al?nd?*\n\n??lem `{hedef}` birimine aktar?ld?, inceleniyor..."
+                telegram_oku.mesaj_gonder(token, chat_id, alinan_bilgi)
+        except Exception:
+            pass
+
     baslatilan = []
     for hedef, maddeler in hedefler.items():
         if not ayar.mesaide_mi():
