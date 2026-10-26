@@ -76,9 +76,8 @@ def _online_kisisel_tabloya_yaz(satirlar: List[list]) -> bool:
 
 
 def senkron_kontrol(kisisel_yol: Optional[Path] = None, ortak_id: str = ORTAK_SHEET_ID) -> Dict:
-    """Ortak tablodan son imle? sonras?ndaki At?lye defterlerini ?eker ve online Ki?isel Tabloya ekler."""
+    """Ortak tablodan son imle? sonras?ndaki At?lye defterlerini ?eker; m?kerrer/TEKRAR_ durumunda en son tarihli olan? al?p online Ki?isel Tabloya ekler."""
     imlec = tarama_imleci_oku()
-    yeni_eklenenler = []
     if not ortak_id:
         return {"yeni_eklenenler": []}
 
@@ -100,13 +99,13 @@ def senkron_kontrol(kisisel_yol: Optional[Path] = None, ortak_id: str = ORTAK_SH
 
     # 2. Bulunan sat?rdan sonras?n? tara
     baslangic = (bulunan_satir + 1) if bulunan_satir > 0 else 2
-    webhook_satirlari = []
+    ham_yeni = []
     for r in range(baslangic, ws_ortak.max_row + 1):
         val_b = _tr_ascii(ws_ortak.cell(r, 2).value)
         val_h = _tr_ascii(ws_ortak.cell(r, 8).value)
         if "alper" in val_b and "ciftci" in val_b and "olmez" not in val_b:
             if "atolye" in val_h:
-                kayit = {
+                ham_yeni.append({
                     "ortak_satir": r,
                     "ogrenci_no": str(ws_ortak.cell(r, 5).value or "").strip(),
                     "ad_soyad": str(ws_ortak.cell(r, 7).value or "").strip(),
@@ -116,21 +115,32 @@ def senkron_kontrol(kisisel_yol: Optional[Path] = None, ortak_id: str = ORTAK_SH
                     "link": str(ws_ortak.cell(r, 9).value or "").strip(),
                     "eposta": str(ws_ortak.cell(r, 4).value or "").strip(),
                     "bolum": str(ws_ortak.cell(r, 6).value or "").strip(),
-                }
-                yeni_eklenenler.append(kayit)
-                webhook_satirlari.append([
-                    "",
-                    kayit["yetkili"],
-                    kayit["zaman_damgasi"],
-                    kayit["eposta"],
-                    kayit["ogrenci_no"],
-                    kayit["bolum"],
-                    kayit["ad_soyad"],
-                    kayit["staj_turu"],
-                    kayit["link"],
-                ])
+                })
 
-    # 3. Yeni defterler varsa online Ki?isel Tabloya webhook ile ekle ve imleci g?ncelle
+    # 3. M?kerrer/TEKRAR_ ay?klama: Her ??renci i?in en son tarihli defteri tut
+    son_kayitlar = {}
+    for h in ham_yeni:
+        key = h["ogrenci_no"].lower() if h["ogrenci_no"] else h["ad_soyad"].lower()
+        son_kayitlar[key] = h
+
+    yeni_eklenenler = [h for h in ham_yeni if son_kayitlar[h["ogrenci_no"].lower() if h["ogrenci_no"] else h["ad_soyad"].lower()] == h]
+
+    webhook_satirlari = [
+        [
+            "",
+            k["yetkili"],
+            k["zaman_damgasi"],
+            k["eposta"],
+            k["ogrenci_no"],
+            k["bolum"],
+            k["ad_soyad"],
+            k["staj_turu"],
+            k["link"],
+        ]
+        for k in yeni_eklenenler
+    ]
+
+    # 4. Yeni tekil defterleri online Ki?isel Tabloya webhook ile ekle ve imleci g?ncelle
     if yeni_eklenenler:
         ok = _online_kisisel_tabloya_yaz(webhook_satirlari)
         son = yeni_eklenenler[-1]
@@ -142,10 +152,6 @@ def senkron_kontrol(kisisel_yol: Optional[Path] = None, ortak_id: str = ORTAK_SH
         )
 
     return {"yeni_eklenenler": yeni_eklenenler}
-
-
-
-
 def durum_oku(durum_yolu: Path = STAJ_DURUM_YOLU) -> dict:
     if not durum_yolu.exists():
         return {"takim": "staj-burosu", "tarama_imleci": {}, "kuyruk": []}
@@ -319,71 +325,67 @@ def ortak_tablodan_yeni_atananlari_suz(
     return yeni_liste
 
 
-def kisisel_tablo_not_yaz(
-    ogrenci_no: str, revize_notu: str, xlsx_yolu: Path = VARSAYILAN_YEREL_XLSX
-) -> bool:
-    """Kişisel Tablonun Atölye sekmesinde ilgili öğrencinin A (Not) sütununa revize notu yazar."""
-    if not xlsx_yolu.exists():
-        return False
-    import openpyxl
-    import shutil
-    import tempfile
-
-    try:
-        wb = openpyxl.load_workbook(xlsx_yolu)
-    except PermissionError:
-        # Dosya Excel'de açıksa geçici kopya üzerinden oku
-        with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
-            tmp_path = Path(tmp.name)
+def kisisel_tablo_not_yaz(ogrenci_no: str, revize_notu: str, xlsx_yolu: Path = VARSAYILAN_YEREL_XLSX) -> bool:
+    """Ki?isel Tablonun At?lye sekmesinde ilgili ??rencinin A (Not) s?tununa online ve yerel revize notu yazar."""
+    webhook_url = os.getenv("KISISEL_SHEET_WEBHOOK_URL", "")
+    online_basarili = False
+    if webhook_url:
+        import urllib.request
         try:
-            shutil.copy2(xlsx_yolu, tmp_path)
-        except PermissionError:
-            import subprocess
-            subprocess.run(
-                ["powershell", "-NoProfile", "-Command", f"Copy-Item -LiteralPath '{xlsx_yolu}' -Destination '{tmp_path}' -Force"],
-                check=False,
-            )
-        wb = openpyxl.load_workbook(tmp_path)
-        tmp_path.unlink(missing_ok=True)
-    ws = wb[AKTIF_SEKME]
-    hedef_satir = None
-    for r in range(ws.max_row, 1, -1):
-        if str(ws.cell(r, 5).value or "").strip() == str(ogrenci_no).strip():
-            hedef_satir = r
-            break
-    if hedef_satir is None:
-        return False
-    ws.cell(hedef_satir, 1).value = revize_notu
-    wb.save(xlsx_yolu)
-    return True
+            payload = json.dumps({"islem": "revize", "ogrenci_no": str(ogrenci_no).strip(), "not_metni": str(revize_notu).strip()}).encode("utf-8")
+            req = urllib.request.Request(webhook_url, data=payload, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                res = json.loads(resp.read().decode("utf-8"))
+                online_basarili = res.get("durum") == "tamam"
+        except Exception as e:
+            print(f"[UYARI] Online tablo revize notu yazma hatas?: {e}", file=sys.stderr)
 
+    if xlsx_yolu.exists():
+        import openpyxl
+        try:
+            wb = openpyxl.load_workbook(xlsx_yolu)
+            ws = wb[AKTIF_SEKME]
+            for r in range(ws.max_row, 1, -1):
+                if str(ws.cell(r, 5).value or "").strip() == str(ogrenci_no).strip():
+                    ws.cell(r, 1).value = revize_notu
+                    wb.save(xlsx_yolu)
+                    return True
+        except Exception:
+            pass
 
-def kisisel_tablo_onayla_yesil_boya(
-    ogrenci_no: str, xlsx_yolu: Path = VARSAYILAN_YEREL_XLSX
-) -> bool:
-    """Onaylanan öğrencinin Kişisel Tablo (Atölye) satırını yeşile boyar."""
-    if not xlsx_yolu.exists():
-        return False
-    import openpyxl
-    from openpyxl.styles import PatternFill
+    return online_basarili
+def kisisel_tablo_onayla_yesil_boya(ogrenci_no: str, xlsx_yolu: Path = VARSAYILAN_YEREL_XLSX) -> bool:
+    """Onaylanan ??rencinin online Google Sheets ve yerel Excel tablosundaki sat?r?n? ye?ile boyar."""
+    webhook_url = os.getenv("KISISEL_SHEET_WEBHOOK_URL", "")
+    online_basarili = False
+    if webhook_url:
+        import urllib.request
+        try:
+            payload = json.dumps({"islem": "onayla", "ogrenci_no": str(ogrenci_no).strip()}).encode("utf-8")
+            req = urllib.request.Request(webhook_url, data=payload, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                res = json.loads(resp.read().decode("utf-8"))
+                online_basarili = res.get("durum") == "tamam"
+        except Exception as e:
+            print(f"[UYARI] Online tablo onay boyama hatas?: {e}", file=sys.stderr)
 
-    wb = openpyxl.load_workbook(xlsx_yolu)
-    ws = wb[AKTIF_SEKME]
-    hedef_satir = None
-    for r in range(ws.max_row, 1, -1):
-        if str(ws.cell(r, 5).value or "").strip() == str(ogrenci_no).strip():
-            hedef_satir = r
-            break
-    if hedef_satir is None:
-        return False
+    if xlsx_yolu.exists():
+        import openpyxl
+        from openpyxl.styles import PatternFill
+        try:
+            wb = openpyxl.load_workbook(xlsx_yolu)
+            ws = wb[AKTIF_SEKME]
+            for r in range(ws.max_row, 1, -1):
+                if str(ws.cell(r, 5).value or "").strip() == str(ogrenci_no).strip():
+                    yesil = PatternFill(start_color="D9EAD3", end_color="D9EAD3", fill_type="solid")
+                    for col in range(1, 10):
+                        ws.cell(r, col).fill = yesil
+                    wb.save(xlsx_yolu)
+                    return True
+        except Exception:
+            pass
 
-    yesil_dolgu = PatternFill(start_color="D9EAD3", end_color="D9EAD3", fill_type="solid")
-    for col in range(1, 10):
-        ws.cell(hedef_satir, col).fill = yesil_dolgu
-    wb.save(xlsx_yolu)
-    return True
-
-
+    return online_basarili
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="Staj Tablo Senkronizasyon ve Sorgu Aracı")
