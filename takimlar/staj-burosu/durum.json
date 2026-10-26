@@ -5,17 +5,23 @@
   "son_sonuc": "200A3609 Soner ŞENGÜL - 19 gün Atölye Stajı kabul edildi (Kümülatif: 118 gün, Mezuniyet Şartı Tamamlandı)",
   "tarama_imleci": {
     "aktif_sekme": "Atölye",
-    "son_ogrenci_no": "200A3609",
-    "son_ogrenci_ad": "SONER ŞENGÜL",
-    "son_zaman_damgasi": "2026-09-11 20:00:57",
-    "kisisel_tablo_son_satir": 154,
-    "ortak_tablo_son_satir": null
+    "son_ogrenci_no": "240A3607",
+    "son_ogrenci_ad": "ESMA ELİTOK",
+    "son_zaman_damgasi": "2026-10-24 22:13:22.165000",
+    "kisisel_tablo_son_satir": 179,
+    "ortak_tablo_son_satir": 3401
   },
   "kuyruk": [
     {
       "id": "staj-200A3609",
       "durum": "tamam",
       "not": "200A3609 Soner ŞENGÜL — 19 iş günü Atölye stajı uygun, imzalı 200A3609_Soner_SENGUL_FR-1323.pdf hazır"
+    },
+    {
+      "id": "staj-372953513",
+      "baslik": "telegram 2026-10-26T10:04 · not: Yeni staj defteri atandı mi üzerime",
+      "durum": "bekliyor",
+      "zaman": "2026-10-26T10:07:00+03:00"
     }
   ],
   "mufettis": {
