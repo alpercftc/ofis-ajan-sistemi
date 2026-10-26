@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
 """
 Ofis Ajan Şirketi - Bağımsız Denetçi Motoru (mufettis.py)
-1. Katman: Deterministik Python (TC Kimlik mod-10, KVKK, e-Devlet Barkod & Metin Diff, Şema denetimi)
+1. Katman: Deterministik Python (TC Kimlik mod-10, KVKK, e-Devlet Barkod & Metin Diff, Şema ve Koşu denetimi)
 2. Katman: Bağımsız LLM denetimi
 """
 import difflib
@@ -11,10 +12,13 @@ import sys
 import tempfile
 from pathlib import Path
 
-KOK_DIZIN = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import ayar  # noqa: E402
 
+KOK_DIZIN = ayar.KOK
 BARKOD_RE = re.compile(r"\b(SGK[A-Z0-9]{10,30})\b")
 TARIH_RE = re.compile(r"\b(\d{2}[./]\d{2}[./]\d{4})\b")
+GECERLI_DURUMLAR = {"bekliyor", "yapiliyor", "tamam", "kacti", "denetim_bekliyor"}
 
 
 def tc_kimlik_dogrula(tc_no: str) -> bool:
@@ -138,6 +142,55 @@ def cikti_denetle(rapor_metni: str, kanit_tablosu: dict = None) -> dict:
         "ihlaller": ihlaller,
         "durum": "ONAYLANDI" if gecerli else "REDDEDILDI",
     }
+
+
+def denetle(kok, takim: str, kosu_dosyasi: Path, zaman: str = None) -> dict:
+    """
+    Birimin tamamladığı koşuyu deterministik olarak denetler (kos.py tarafından çağrılır).
+    1. Koşu kaydı (SIRKET_KOSU) var mı ve boş değil mi?
+    2. Koşu kaydında KVKK (açık T.C. Kimlik No) sızıntısı var mı?
+    3. durum.json geçerli mi?
+    Sonucu durum.json['mufettis'] altına ve sirket-log/mufettis.log dosyasına yazar.
+    """
+    kok = Path(kok or KOK_DIZIN)
+    zaman = zaman or ayar.simdi_iso()
+    bulgular = []
+
+    kosu_yolu = Path(kosu_dosyasi)
+    if not kosu_yolu.is_file() or not kosu_yolu.read_text(encoding="utf-8", errors="ignore").strip():
+        bulgular.append(f"koşu kaydı yazılmadı veya boş: {kosu_yolu.name}")
+    else:
+        metin = kosu_yolu.read_text(encoding="utf-8", errors="ignore")
+        bulgular.extend(kvkk_kontrol(metin))
+
+    durum = ayar.durum_oku(takim, kok)
+    if not durum:
+        bulgular.append("durum.json okunamadı veya boş")
+    else:
+        for oge in durum.get("kuyruk") or []:
+            if isinstance(oge, dict) and oge.get("durum") not in GECERLI_DURUMLAR:
+                bulgular.append(f"geçersiz kuyruk durumu: {oge.get('id')} -> {oge.get('durum')}")
+
+    karar = "ONAY" if not bulgular else "RED"
+    muf_kaydi = {
+        "son_denetim": zaman,
+        "son_karar": karar,
+        "bulgular": bulgular,
+    }
+    ayar.durum_guncelle(takim, {"mufettis": muf_kaydi}, kok)
+
+    log_yolu = kok / "sirket-log" / "mufettis.log"
+    try:
+        log_yolu.parent.mkdir(parents=True, exist_ok=True)
+        with open(log_yolu, "a", encoding="utf-8") as f:
+            f.write(
+                f"{zaman} | {takim} | {karar} | "
+                f"{'; '.join(bulgular) if bulgular else 'temiz'}\n"
+            )
+    except OSError:
+        pass
+
+    return {"karar": karar, "bulgular": bulgular}
 
 
 if __name__ == "__main__":

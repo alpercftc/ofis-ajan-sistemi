@@ -23,3 +23,7 @@ takimlar: [ik-memuru, bilgi-islem]
 - `[BİLGİ] YYYY-MM-DD HH:MM:SS - Görev başlatıldı: <gorev_id>`
 - `[UYARI] YYYY-MM-DD HH:MM:SS - Eksik evrak tespit edildi: <ogrenci_no>`
 - `[HATA]  YYYY-MM-DD HH:MM:SS - Dosya ayrıştırma hatası: <hata_detayi>`
+
+## Öğrenilenler
+- **Windows UTF-8 Akış ve Konsol Çıktı Standardı:** Windows `cp1254` konsolunda standart `print` çağrıları `→` (`\u2192`) gibi Unicode sembollerinde `UnicodeEncodeError` verebilir. Modül seviyesinde (`ayar.py` ve `tests/__init__.py`) `sys.stdout.reconfigure(encoding="utf-8", errors="replace")` uygulanmalı, konsol çıktılarında güvenli ASCII `->` sembolleri tercih edilmelidir. Ayrıca Türkçe arama ve karşılaştırmalarda `replace('İ', 'i').replace('I', 'ı')` adımı `.lower()` öncesinde uygulanmalıdır.
+

@@ -39,20 +39,23 @@ AJANLAR = [
 ZINCIR = [
     {
         "ad": "staj-inceleme-onay-karti",
-        "desen": re.compile(r"^staj-([A-Za-z0-9_-]+)$"),
+        "kaynak_takim": "staj-burosu",
+        "desen": re.compile(r"^staj-(?!onay-)([A-Za-z0-9_-]+)$"),
         "takim": "dekan",
         "id": "staj-onay-{0}",
         "not": "staj-burosu incelemeyi ve imzalı FR-1323 hazırlığını tamamladı; Birleşik Gündem onay kartına ekle",
     },
     {
         "ad": "mevzuat-derleme-ozeti",
-        "desen": re.compile(r"^mevzuat-([A-Za-z0-9_-]+)$"),
+        "kaynak_takim": "dekan-sekreteri",
+        "desen": re.compile(r"^mevzuat-(?!onay-)([A-Za-z0-9_-]+)$"),
         "takim": "dekan",
         "id": "mevzuat-onay-{0}",
         "not": "dekan-sekreteri mevzuat derlemesini tamamladı; Birleşik Gündem özetine ekle",
     },
     {
         "ad": "posta-idari-gorev",
+        "kaynak_takim": "postaci",
         "desen": re.compile(r"^posta-idari-([A-Za-z0-9_-]+)$"),
         "takim": "memur",
         "id": "idari-{0}",
@@ -60,6 +63,7 @@ ZINCIR = [
     },
     {
         "ad": "posta-staj-bildirimi",
+        "kaynak_takim": "postaci",
         "desen": re.compile(r"^posta-staj-([A-Za-z0-9_-]+)$"),
         "takim": "staj-burosu",
         "id": "staj-{0}",
@@ -67,6 +71,7 @@ ZINCIR = [
     },
     {
         "ad": "posta-gundem-bildirimi",
+        "kaynak_takim": "postaci",
         "desen": re.compile(r"^posta-([A-Za-z0-9_-]+)$"),
         "takim": "dekan",
         "id": "gundem-{0}",
@@ -74,6 +79,7 @@ ZINCIR = [
     },
     {
         "ad": "idari-evrak-onay",
+        "kaynak_takim": "memur",
         "desen": re.compile(r"^idari-([A-Za-z0-9_-]+)$"),
         "takim": "dekan",
         "id": "evrak-onay-{0}",
@@ -86,9 +92,11 @@ def _slug(metin: str) -> str:
     return re.sub(r"[^A-Za-z0-9]+", "-", (metin or "")).strip("-")
 
 
-def zincir_esle(id_: str):
+def zincir_esle(id_: str, kaynak_takim: str = None):
     """Kuyruk id'sine uyan ilk zincir maddesinin isteğini döner; yoksa None."""
     for kural in ZINCIR:
+        if kaynak_takim and kural.get("kaynak_takim") and kural["kaynak_takim"] != kaynak_takim:
+            continue
         eslesme = kural["desen"].match(id_ or "")
         if not eslesme:
             continue
@@ -130,7 +138,7 @@ def zinciri_isle(kok, takim: str, kuru: bool = False) -> list[dict]:
     for oge in durum.get("kuyruk") or []:
         if not isinstance(oge, dict) or oge.get("durum") != "tamam":
             continue
-        istek = zincir_esle(oge.get("id"))
+        istek = zincir_esle(oge.get("id"), kaynak_takim=takim)
         if not istek:
             continue
         hedef_kuyruk = ayar.durum_oku(istek["takim"], kok).get("kuyruk") or []
@@ -281,13 +289,13 @@ ETIKET = {"kostu": "KOŞ  ", "sirada": "SIRA ", "bekletildi": "BEKLE"}
 def bas(sonuc: dict, simdi: datetime, kuru: bool):
     print(f"dağıtıcı — {simdi:%Y-%m-%d %H:%M}")
     for z in sonuc["zincir"]:
-        print(f"  ZİNCİR {z['kaynak_takim']}/{z['kaynak_id']} → {z['takim']}/{z['id']} ({z['ad']})")
+        print(f"  ZİNCİR {z['kaynak_takim']}/{z['kaynak_id']} -> {z['takim']}/{z['id']} ({z['ad']})")
     if not sonuc["zincir"]:
         print("  ZİNCİR (yeni bağlantı yok)")
     for k in sonuc["kararlar"]:
         print(f"  {ETIKET[k['sonuc']]} {k['takim']:<16} — {k['sebep']}")
     kosan = [k["takim"] for k in sonuc["kararlar"] if k["sonuc"] == "kostu"]
-    print(f"  → {len(kosan)} birim koşar: {', '.join(kosan) if kosan else '(yok)'}")
+    print(f"  -> {len(kosan)} birim koşar: {', '.join(kosan) if kosan else '(yok)'}")
     if kuru:
         print("  (kuru koşu: kuyruğa yazılmadı, hiçbir birim başlatılmadı)")
 

@@ -12,6 +12,14 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Konsol ve standart akışlarda UTF-8 güvenliği (Windows cp1254/UnicodeEncodeError kalkanı)
+for _akis in (sys.stdout, sys.stderr):
+    if hasattr(_akis, "reconfigure"):
+        try:
+            _akis.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 KOK_DIZIN = Path(__file__).resolve().parent.parent
 KOK = KOK_DIZIN
 TAKIMLAR_DIZINI = KOK_DIZIN / "takimlar"

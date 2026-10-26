@@ -44,35 +44,35 @@ class TelegramHatasi(Exception):
 
 
 def mesaj_gonder(token: str, chat_id: int, metin: str) -> bool:
-    """Telegram ?zerinden kullan?c?ya do?rudan UTF-8 mesaj g?nderir."""
-    try:
-        veri = json.dumps({"chat_id": chat_id, "text": metin, "parse_mode": "Markdown"}, ensure_ascii=False).encode("utf-8")
-        istek = urllib.request.Request(
-            f"https://api.telegram.org/bot{token}/sendMessage",
-            data=veri,
-            headers={"Content-Type": "application/json; charset=utf-8", "User-Agent": "ofis-ajan-sistemi/1.0"},
-        )
-        with urllib.request.urlopen(istek, timeout=15) as resp:
-            res = json.loads(resp.read().decode("utf-8"))
-            return bool(res.get("ok"))
-    except Exception:
+    """Telegram üzerinden kullanıcıya doğrudan saf UTF-8 mesaj gönderir."""
+    for parse_mode in ("Markdown", None):
         try:
-            veri = json.dumps({"chat_id": chat_id, "text": metin}, ensure_ascii=False).encode("utf-8")
+            yuk = {"chat_id": chat_id, "text": metin}
+            if parse_mode:
+                yuk["parse_mode"] = parse_mode
+            veri = json.dumps(yuk, ensure_ascii=False).encode("utf-8")
             istek = urllib.request.Request(
                 f"https://api.telegram.org/bot{token}/sendMessage",
                 data=veri,
-                headers={"Content-Type": "application/json; charset=utf-8", "User-Agent": "ofis-ajan-sistemi/1.0"},
+                headers={
+                    "Content-Type": "application/json; charset=utf-8",
+                    "User-Agent": "ofis-ajan-sistemi/1.0",
+                },
             )
             with urllib.request.urlopen(istek, timeout=15) as resp:
                 res = json.loads(resp.read().decode("utf-8"))
-                return bool(res.get("ok"))
+                if res.get("ok"):
+                    return True
         except Exception:
-            return False
-
+            continue
+    return False
 
 
 def _api(token, yontem, **parametreler):
-    sorgu = urllib.parse.urlencode({k: v for k, v in parametreler.items() if v is not None})
+    sorgu = urllib.parse.urlencode(
+        {k: v for k, v in parametreler.items() if v is not None},
+        encoding="utf-8",
+    )
     istek = urllib.request.Request(
         f"https://api.telegram.org/bot{token}/{yontem}?{sorgu}",
         headers={"User-Agent": "ofis-ajan-sistemi/1.0"},

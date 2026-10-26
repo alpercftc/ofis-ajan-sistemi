@@ -1,13 +1,13 @@
 {
   "aciklama": "Ofis Ajan Şirketi Platform ve Soyut Seviye Model Haritası",
-  "versiyon": "1.0.0",
+  "versiyon": "1.1.0",
   "varsayilan_platform": "antigravity",
   "platformlar": {
     "antigravity": {
       "yuksek": "gemini-3.8-flash-high",
       "orta": "gemini-3.8-flash-medium",
-      "hizli": "gemini-3.8-flash-medium",
-      "denetci": "claude-sonnet-medium"
+      "hizli": "gemini-3.8-flash-low",
+      "denetci": "claude-sonnet-5-5-medium"
     },
     "claude": {
       "yuksek": "claude-3-7-sonnet",
