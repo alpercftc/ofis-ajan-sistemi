@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Telegram gelen kutusu — bota attığın mesajları, sesli notları ve belgeleri okur (getUpdates, stdlib).
+"""Telegram gelen kutusu ve mesaj biçimlendirici (telegram_oku.py).
 
 Kullanım:
   py -3 bin/telegram_oku.py --chat-id-bul   # bota bir mesaj at, sonra bunu koş, çıkanı .env'e yaz
@@ -7,14 +7,8 @@ Kullanım:
   py -3 bin/telegram_oku.py --isle          # yeni mesajları takimlar/postaci/gelen/ altına yaz
 
 Çıkış kodları: 0 tamam · 1 anahtar eksik · 2 token geçersiz (Telegram 401/403) · 3 ulaşılamadı (ağ).
-
-Anahtarlar `.env`'de: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID. Yalnızca kendi chat id'nden gelen
-mesajlar işlenir — bota başkası yazarsa görmezden gelinir.
-
-Offset: en son işlenen `update_id` `takimlar/postaci/durum.json` → `sayaclar.telegram_son_update`
-alanında durur. Telegram bir güncellemeyi `offset` ile onaylandıktan sonra bir daha vermez;
-bu yüzden `--son` offset'i ilerletmez, `--isle` ilerletir.
 """
+import html
 import json
 import os
 import re
@@ -44,12 +38,131 @@ class TelegramHatasi(Exception):
         self.kod = kod
 
 
+def _markdown_tablolarini_karta_cevir(metin: str) -> str:
+    """
+    Telegram'da bozulan Markdown boru tablolarını (`| Sütun 1 | Sütun 2 |`)
+    mobil ekranda asla kaymayan dikey kutu kartlarına (`┌ ├ └`) dönüştürür.
+    """
+    satirlar = metin.splitlines()
+    yeni_satirlar = []
+    i = 0
+    while i < len(satirlar):
+        satir = satirlar[i].strip()
+        if satir.startswith("|") and satir.endswith("|") and i + 1 < len(satirlar):
+            ayirici = satirlar[i + 1].strip()
+            if ayirici.startswith("|") and set(ayirici.replace("|", "").replace(":", "").replace("-", "").strip()) == set():
+                basliklar = [h.strip().strip("*").strip() for h in satir.strip("|").split("|")]
+                i += 2
+                kartlar = []
+                while i < len(satirlar) and satirlar[i].strip().startswith("|") and satirlar[i].strip().endswith("|"):
+                    hucreler = [c.strip() for c in satirlar[i].strip().strip("|").split("|")]
+                    if any(hucreler):
+                         # 2 veya 3 sütunlu (Alan | Durum | Kanıt) tek öğrenci kriter tablosu mu?
+                        if len(basliklar) <= 3 and any(k in basliklar[0].lower() for k in ("kriter", "alan", "belge")):
+                            ilk = hucreler[0] if len(hucreler) > 0 else ""
+                            ikinci = hucreler[1] if len(hucreler) > 1 else ""
+                            ucuncu = hucreler[2] if len(hucreler) > 2 else ""
+                            satir_str = f"• {ilk}: {ikinci}" + (f" — {ucuncu}" if ucuncu else "")
+                            kartlar.append(satir_str)
+                        else:
+                            # Çok sütunlu öğrenci tablosu -> Dikey Öğrenci Kartı
+                            baslik_parca = []
+                            detaylar = []
+                            for idx, deger in enumerate(hucreler):
+                                sutun_adi = basliklar[idx] if idx < len(basliklar) else f"Alan {idx+1}"
+                                if idx < 3 and sutun_adi.lower() in ("no", "sıra", "öğrenci no", "isim soyisim", "adı soyadı", "ad soyad"):
+                                    baslik_parca.append(deger)
+                                else:
+                                    detaylar.append((sutun_adi, deger))
+                            kart_satirlari = [f"🎓 {' — '.join(baslik_parca)}" if baslik_parca else "🎓 Kayıt"]
+                            for d_idx, (k_ad, k_deg) in enumerate(detaylar):
+                                on_ek = "┌" if d_idx == 0 else ("└" if d_idx == len(detaylar) - 1 else "├")
+                                kart_satirlari.append(f"{on_ek} *{k_ad}:* {k_deg}")
+                            kartlar.append("\n".join(kart_satirlari))
+                    i += 1
+                yeni_satirlar.append("\n\n".join(kartlar))
+                continue
+        yeni_satirlar.append(satirlar[i])
+        i += 1
+    return "\n".join(yeni_satirlar)
+
+
+def _telegram_icin_temizle(metin: str) -> str:
+    """
+    Ajan iç sistem notlarını (`🛡️ Güvenlik...`, `**Özet:**...`, `file:///` linklerini) temizler
+    ve Markdown tablolarını mobil uyumlu dikey kartlara çevirir.
+    """
+    # 1. [etiket](file:///...) linklerini sadece `etiket` yap
+    metin = re.sub(r"\[([^\]]+)\]\(file:///[^\)]+\)", r"`\1`", metin)
+    # 2. İç sistem/kural/dosya kapanış paragraflarını kırp
+    Temiz_satirlar = []
+    for satir in metin.splitlines():
+        s_str = satir.strip()
+        if s_str.startswith("🛡️") and ("ANAYASA" in s_str or "durum.json" in s_str or "SIRKET_KOSU" in s_str):
+            continue
+        if (s_str.startswith("**Özet:**") or s_str.startswith("Özet:")) and (
+            "durum.json" in s_str or "defter.md" in s_str or "görev başarıyla tamamlanmıştır" in s_str
+        ):
+            continue
+        Temiz_satirlar.append(satir)
+    metin = "\n".join(Temiz_satirlar).strip()
+    # 3. Markdown boru tablolarını dikey Telegram kartlarına çevir
+    metin = _markdown_tablolarini_karta_cevir(metin)
+    # 4. Fazla yatay çizgileri (`---`) zarif ayırıcıya çevir
+    metin = re.sub(r"(?m)^\s*---\s*$", "━━━━━━━━━━━━━━━━━━━━━━", metin)
+    return metin.strip()
+
+
+def _md_to_telegram_html(metin: str) -> str:
+    """
+    CommonMark / Markdown metnini Telegram'ın hatasız işlediği HTML (`<b>`, `<i>`, `<code>`, `<pre>`)
+    formatına dönüştürür.
+    """
+    kod_bloklari = []
+
+    def _kod_blok_sakla(eslesme):
+        icerik = html.escape(eslesme.group(1).strip("\r\n"))
+        kod_bloklari.append(f"<pre>{icerik}</pre>")
+        return f"@@KODBLOK{len(kod_bloklari) - 1}@@"
+
+    metin = re.sub(r"```(?:[a-zA-Z0-9_-]+)?\n(.*?)```", _kod_blok_sakla, metin, flags=re.DOTALL)
+
+    satir_kodlari = []
+
+    def _satir_ici_kod_sakla(eslesme):
+        icerik = html.escape(eslesme.group(1))
+        satir_kodlari.append(f"<code>{icerik}</code>")
+        return f"@@SATIRKOD{len(satir_kodlari) - 1}@@"
+
+    metin = re.sub(r"`([^`\n]+)`", _satir_ici_kod_sakla, metin)
+
+    # Kalan metni HTML escape et
+    metin = html.escape(metin)
+
+    # Başlıkları (### Başlık) kalın satıra çevir
+    metin = re.sub(r"(?m)^\s*#{1,6}\s+(.+)$", r"<b>\1</b>", metin)
+    # **kalın** -> <b>kalın</b>
+    metin = re.sub(r"\*\*([^\*\n]+)\*\*", r"<b>\1</b>", metin)
+    # *kalın/vurgu* -> <b>vurgu</b>
+    metin = re.sub(r"(?<!\*)\*([^\*\n]+)\*(?!\*)", r"<b>\1</b>", metin)
+    # _italik_ -> <i>italik</i> (yalnızca kelime sınırlarında, dosya adlarını bozmadan)
+    metin = re.sub(r"(?<![A-Za-z0-9])_([^_\n]+)_(?![A-Za-z0-9])", r"<i>\1</i>", metin)
+
+    for idx, kod_html in enumerate(satir_kodlari):
+        metin = metin.replace(f"@@SATIRKOD{idx}@@", kod_html)
+    for idx, blok_html in enumerate(kod_bloklari):
+        metin = metin.replace(f"@@KODBLOK{idx}@@", blok_html)
+
+    return metin
+
+
 def _tek_parca_gonder(token: str, chat_id: int, parca: str) -> bool:
-    for parse_mode in ("Markdown", None):
+    html_parca = _md_to_telegram_html(parca)
+    for yuk in (
+        {"chat_id": chat_id, "text": html_parca, "parse_mode": "HTML"},
+        {"chat_id": chat_id, "text": parca},
+    ):
         try:
-            yuk = {"chat_id": chat_id, "text": parca}
-            if parse_mode:
-                yuk["parse_mode"] = parse_mode
             veri = json.dumps(yuk, ensure_ascii=False).encode("utf-8")
             istek = urllib.request.Request(
                 f"https://api.telegram.org/bot{token}/sendMessage",
@@ -69,8 +182,8 @@ def _tek_parca_gonder(token: str, chat_id: int, parca: str) -> bool:
 
 
 def mesaj_gonder(token: str, chat_id: int, metin: str) -> bool:
-    """Telegram üzerinden kullanıcıya doğrudan saf UTF-8 mesaj gönderir (uzun metinleri otomatik böler)."""
-    metin = str(metin or "").strip()
+    """Telegram üzerinden kullanıcıya mobil uyumlu, dikey kart formatlı saf UTF-8 mesaj gönderir."""
+    metin = _telegram_icin_temizle(str(metin or ""))
     if not metin:
         return False
     if len(metin) <= PARCA_SINIRI:
