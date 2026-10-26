@@ -43,6 +43,34 @@ class TelegramHatasi(Exception):
         self.kod = kod
 
 
+def mesaj_gonder(token: str, chat_id: int, metin: str) -> bool:
+    """Telegram üzerinden kullanıcıya doğrudan mesaj gönderir."""
+    try:
+        veri = json.dumps({"chat_id": chat_id, "text": metin, "parse_mode": "Markdown"}).encode("utf-8")
+        istek = urllib.request.Request(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            data=veri,
+            headers={"Content-Type": "application/json", "User-Agent": "ofis-ajan-sistemi/1.0"},
+        )
+        with urllib.request.urlopen(istek, timeout=15) as resp:
+            res = json.loads(resp.read().decode("utf-8"))
+            return bool(res.get("ok"))
+    except Exception:
+        # Markdown ayrıştırma hatası olursa düz metin olarak tekrar dene
+        try:
+            veri = json.dumps({"chat_id": chat_id, "text": metin}).encode("utf-8")
+            istek = urllib.request.Request(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                data=veri,
+                headers={"Content-Type": "application/json", "User-Agent": "ofis-ajan-sistemi/1.0"},
+            )
+            with urllib.request.urlopen(istek, timeout=15) as resp:
+                res = json.loads(resp.read().decode("utf-8"))
+                return bool(res.get("ok"))
+        except Exception:
+            return False
+
+
 def _api(token, yontem, **parametreler):
     sorgu = urllib.parse.urlencode({k: v for k, v in parametreler.items() if v is not None})
     istek = urllib.request.Request(

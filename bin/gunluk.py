@@ -57,13 +57,28 @@ def sabah_raporu(kok=None, kuru: bool = False) -> str:
     kok = Path(kok or KOK)
     an = datetime.now().astimezone()
     gun_adi = GUNLER[an.weekday()]
+
+    # 1. Staj Bürosu: Ortak Tablodaki yeni Atölye staj defterlerini otomatik tara ve senkronize et (0-token)
+    staj_durumu = "atlandı (kuru mod)"
+    if not kuru:
+        try:
+            import staj_senkron
+            senk_sonuc = staj_senkron.senkron_kontrol()
+            yeni_sayisi = len(senk_sonuc.get("yeni_eklenenler", []))
+            staj_durumu = f"{yeni_sayisi} yeni defter atandı" if yeni_sayisi else "yeni atanan defter yok"
+        except Exception as e:
+            staj_durumu = f"senkron hatası: {e}"
+
+    # 2. Dağıtıcı: Bekleyen kuyruk maddelerini ve zinciri işlet
     sonuc = dagitici.dagit(kok, an, kuru=kuru)
     aktarilan = len(sonuc.get("zincir") or [])
+
     satirlar = [
         f"# 🌅 Sabah Ofis Özeti — {an:%Y-%m-%d} ({gun_adi})",
         "",
         f"- **Mesai Saatleri:** `{ayar.MESAI_METNI}`",
         f"- **Aktif Platform:** `{ayar.platform_al()}`",
+        f"- **Atölye Staj Senkronu:** `{staj_durumu}`",
         f"- **Dağıtıcı Aktarılan İş:** `{aktarilan}` {'(kuru mod)' if kuru else ''}",
         "",
         "## Birim Durum Tablosu",
@@ -75,7 +90,38 @@ def sabah_raporu(kok=None, kuru: bool = False) -> str:
         hedef = kok / RAPOR_DIZINI / f"{an:%Y-%m-%d}-sabah.md"
         hedef.parent.mkdir(parents=True, exist_ok=True)
         hedef.write_text(metin, encoding="utf-8")
+
+        # Sabah Telegram bildirimi
+        try:
+            import os
+            import telegram_oku
+            ayar.ortam_yukle()
+            token = os.environ.get("TELEGRAM_BOT_TOKEN")
+            ham_id = os.environ.get("TELEGRAM_CHAT_ID")
+            if token and ham_id:
+                tg_mesaj = (
+                    f"🌅 *Sabah Ofis Özeti ({an:%d.%m.%Y})*\n\n"
+                    f"• Mesai: `{ayar.MESAI_METNI}`\n"
+                    f"• Atölye Staj Senkronu: `{staj_durumu}`\n"
+                    f"• Dağıtıcı Aktarılan İş: `{aktarilan}`\n\n"
+                    f"Mesai başladı, sistem emirlerinizi bekliyor."
+                )
+                telegram_oku.mesaj_gonder(token, int(ham_id), tg_mesaj)
+        except Exception:
+            pass
+
     return metin
+
+
+def arka_plan_servislerini_kapat():
+    """Mesai bitiminde (18:00) çalışan arka plan dinleyicilerini temiz bir şekilde kapatır."""
+    import subprocess
+    try:
+        # telegram_dinle.py sürecini sonlandır
+        cmd = 'Get-CimInstance Win32_Process -Filter "CommandLine LIKE \'%telegram_dinle.py%\'" | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }'
+        subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, timeout=10)
+    except Exception:
+        pass
 
 
 def aksam_raporu(kok=None, kuru: bool = False) -> str:
@@ -97,6 +143,28 @@ def aksam_raporu(kok=None, kuru: bool = False) -> str:
         hedef = kok / RAPOR_DIZINI / f"{an:%Y-%m-%d}-aksam.md"
         hedef.parent.mkdir(parents=True, exist_ok=True)
         hedef.write_text(metin, encoding="utf-8")
+        
+        # 1. Mesai bitimi: Arka plan servislerini kapat
+        arka_plan_servislerini_kapat()
+        
+        # 2. Telegram üzerinden Alper'e gün sonu özetini bildir
+        try:
+            import os
+            import telegram_oku
+            ayar.ortam_yukle()
+            token = os.environ.get("TELEGRAM_BOT_TOKEN")
+            ham_id = os.environ.get("TELEGRAM_CHAT_ID")
+            if token and ham_id:
+                ozet_mesaj = (
+                    f"🌇 *Akşam Gün Sonu Denetim Raporu ({an:%d.%m.%Y})*\n\n"
+                    f"• Bugün Tamamlanan Koşu: `{len(bugun_kosular)}`\n"
+                    f"• Mesai kapandı, arka plan dinleyicileri uykuya alındı.\n"
+                    f"İyi akşamlar dilerim."
+                )
+                telegram_oku.mesaj_gonder(token, int(ham_id), ozet_mesaj)
+        except Exception:
+            pass
+
     return metin
 
 

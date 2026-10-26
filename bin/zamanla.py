@@ -30,15 +30,17 @@ TETIKLER = [
         "ad": "sabah",
         "saat": ayar.MESAI_BASLANGIC,
         "dakika": 0,
-        "bayrak": "--sabah",
-        "ne": "dağıtıcı + sabah raporu",
+        "betik": "ofis_baslat.py",
+        "bayrak": "",
+        "ne": "ofis başlatıcı + staj senkronu + dekan koşusu + telegram dinleyici",
     },
     {
         "ad": "aksam",
         "saat": ayar.MESAI_BITIS,
         "dakika": 0,
+        "betik": "gunluk.py",
         "bayrak": "--aksam",
-        "ne": "gün sonu denetim raporu (0-token)",
+        "ne": "gün sonu denetim raporu (0-token) + telegram bildirimi + servis kapatma",
     },
 ]
 
@@ -54,8 +56,10 @@ def gorev_adi(ad: str, kok=None) -> str:
 
 def gorev_komutu(tetik: dict, kok=None) -> str:
     kok_yol = Path(kok or KOK).resolve()
-    betik = kok_yol / "bin" / "gunluk.py"
-    return f'"{sys.executable}" "{betik}" {tetik["bayrak"]}'
+    betik_adi = tetik.get("betik", "gunluk.py")
+    betik = kok_yol / "bin" / betik_adi
+    bayrak = f" {tetik['bayrak']}" if tetik.get("bayrak") else ""
+    return f'"{sys.executable}" "{betik}"{bayrak}'
 
 
 def _schtasks(*argv) -> tuple[int, str]:
