@@ -47,35 +47,103 @@ def _online_xlsx_indir(sheet_id: str):
     return None
 
 
+def _tr_ascii(s) -> str:
+    if not s:
+        return ""
+    tr_map = str.maketrans("????????????", "CcGgIiOoSsUu")
+    return str(s).translate(tr_map).lower()
+
+
+def _online_kisisel_tabloya_yaz(satirlar: List[list]) -> bool:
+    """Google Apps Script Webhook ?zerinden sat?rlar? online Ki?isel Tablonun ('At?lye') sonuna ekler."""
+    webhook_url = os.getenv("KISISEL_SHEET_WEBHOOK_URL", "")
+    if not webhook_url or not satirlar:
+        return False
+    import urllib.request
+    try:
+        req_data = json.dumps({"satirlar": satirlar}).encode("utf-8")
+        req = urllib.request.Request(
+            webhook_url,
+            data=req_data,
+            headers={"Content-Type": "application/json", "User-Agent": "ofis-ajan-sistemi/1.0"},
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            res = json.loads(resp.read().decode("utf-8"))
+            return res.get("durum") == "tamam"
+    except Exception as e:
+        print(f"[UYARI] Ki?isel online tablo webhook hatas?: {e}", file=sys.stderr)
+        return False
+
+
 def senkron_kontrol(kisisel_yol: Optional[Path] = None, ortak_id: str = ORTAK_SHEET_ID) -> Dict:
-    """gunluk.py ve ofis_baslat.py tarafından çağrılan 0-token senkronizasyon wrapper'ı."""
+    """Ortak tablodan son imle? sonras?ndaki At?lye defterlerini ?eker ve online Ki?isel Tabloya ekler."""
     imlec = tarama_imleci_oku()
-    # Ortak tabloyu online çekmeyi dene
     yeni_eklenenler = []
-    if ortak_id:
-        wb = _online_xlsx_indir(ortak_id)
-        if wb and AKTIF_SEKME in wb.sheetnames:
-            ws = wb[AKTIF_SEKME]
-            satirlar = []
-            for row in ws.iter_rows(min_row=2, values_only=True):
-                if not row or not any(row):
-                    continue
-                # Standart sütun eşlemesi: A: Not, B: Tarih/Zaman, C: Öğrenci No, D: Ad Soyad, vb.
-                satirlar.append({
-                    "zaman_damgasi": str(row[1] or ""),
-                    "ogrenci_no": str(row[2] or ""),
-                    "ad_soyad": str(row[3] or ""),
-                    "yetkili": str(row[10] or "") if len(row) > 10 else "",
-                })
-            yeni_eklenenler = ortak_tablodan_yeni_atananlari_suz(satirlar, imlec)
-            if yeni_eklenenler:
-                son = yeni_eklenenler[-1]
-                tarama_imleci_guncelle(
-                    son_ogrenci_no=son.get("ogrenci_no"),
-                    son_ogrenci_ad=son.get("ad_soyad"),
-                    son_zaman_damgasi=son.get("zaman_damgasi"),
-                )
+    if not ortak_id:
+        return {"yeni_eklenenler": []}
+
+    wb_ortak = _online_xlsx_indir(ortak_id)
+    if not wb_ortak:
+        return {"yeni_eklenenler": [], "hata": "Ortak tablo indirilemedi"}
+
+    ws_ortak = wb_ortak[wb_ortak.sheetnames[0]]
+    son_no = (imlec.get("son_ogrenci_no") or "").strip()
+
+    # 1. Ortak tablodaki son imle? sat?r?n? bul
+    bulunan_satir = 0
+    if son_no:
+        for r in range(1, ws_ortak.max_row + 1):
+            val_no = str(ws_ortak.cell(r, 5).value or "").strip()
+            val_yetkili = _tr_ascii(ws_ortak.cell(r, 2).value)
+            if val_no == son_no and "alper" in val_yetkili and "ciftci" in val_yetkili:
+                bulunan_satir = r
+
+    # 2. Bulunan sat?rdan sonras?n? tara
+    baslangic = (bulunan_satir + 1) if bulunan_satir > 0 else 2
+    webhook_satirlari = []
+    for r in range(baslangic, ws_ortak.max_row + 1):
+        val_b = _tr_ascii(ws_ortak.cell(r, 2).value)
+        val_h = _tr_ascii(ws_ortak.cell(r, 8).value)
+        if "alper" in val_b and "ciftci" in val_b and "olmez" not in val_b:
+            if "atolye" in val_h:
+                kayit = {
+                    "ortak_satir": r,
+                    "ogrenci_no": str(ws_ortak.cell(r, 5).value or "").strip(),
+                    "ad_soyad": str(ws_ortak.cell(r, 7).value or "").strip(),
+                    "zaman_damgasi": str(ws_ortak.cell(r, 3).value or "").strip(),
+                    "yetkili": str(ws_ortak.cell(r, 2).value or "").strip(),
+                    "staj_turu": str(ws_ortak.cell(r, 8).value or "").strip(),
+                    "link": str(ws_ortak.cell(r, 9).value or "").strip(),
+                    "eposta": str(ws_ortak.cell(r, 4).value or "").strip(),
+                    "bolum": str(ws_ortak.cell(r, 6).value or "").strip(),
+                }
+                yeni_eklenenler.append(kayit)
+                webhook_satirlari.append([
+                    "",
+                    kayit["yetkili"],
+                    kayit["zaman_damgasi"],
+                    kayit["eposta"],
+                    kayit["ogrenci_no"],
+                    kayit["bolum"],
+                    kayit["ad_soyad"],
+                    kayit["staj_turu"],
+                    kayit["link"],
+                ])
+
+    # 3. Yeni defterler varsa online Ki?isel Tabloya webhook ile ekle ve imleci g?ncelle
+    if yeni_eklenenler:
+        ok = _online_kisisel_tabloya_yaz(webhook_satirlari)
+        son = yeni_eklenenler[-1]
+        tarama_imleci_guncelle(
+            son_ogrenci_no=son["ogrenci_no"],
+            son_ogrenci_ad=son["ad_soyad"],
+            son_zaman_damgasi=son["zaman_damgasi"],
+            ortak_tablo_son_satir=son["ortak_satir"],
+        )
+
     return {"yeni_eklenenler": yeni_eklenenler}
+
+
 
 
 def durum_oku(durum_yolu: Path = STAJ_DURUM_YOLU) -> dict:
