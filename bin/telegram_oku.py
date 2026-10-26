@@ -33,6 +33,7 @@ URL = re.compile(r"https?://\S+")
 
 TOKEN_KODU = 2      # 401/403 — token geçersiz
 AG_KODU = 3         # ağ/sunucu — sonra tekrar denenebilir
+PARCA_SINIRI = 3800
 
 
 class TelegramHatasi(Exception):
@@ -43,11 +44,10 @@ class TelegramHatasi(Exception):
         self.kod = kod
 
 
-def mesaj_gonder(token: str, chat_id: int, metin: str) -> bool:
-    """Telegram üzerinden kullanıcıya doğrudan saf UTF-8 mesaj gönderir."""
+def _tek_parca_gonder(token: str, chat_id: int, parca: str) -> bool:
     for parse_mode in ("Markdown", None):
         try:
-            yuk = {"chat_id": chat_id, "text": metin}
+            yuk = {"chat_id": chat_id, "text": parca}
             if parse_mode:
                 yuk["parse_mode"] = parse_mode
             veri = json.dumps(yuk, ensure_ascii=False).encode("utf-8")
@@ -66,6 +66,33 @@ def mesaj_gonder(token: str, chat_id: int, metin: str) -> bool:
         except Exception:
             continue
     return False
+
+
+def mesaj_gonder(token: str, chat_id: int, metin: str) -> bool:
+    """Telegram üzerinden kullanıcıya doğrudan saf UTF-8 mesaj gönderir (uzun metinleri otomatik böler)."""
+    metin = str(metin or "").strip()
+    if not metin:
+        return False
+    if len(metin) <= PARCA_SINIRI:
+        return _tek_parca_gonder(token, chat_id, metin)
+
+    parcalar = []
+    kalan = metin
+    while kalan:
+        if len(kalan) <= PARCA_SINIRI:
+            parcalar.append(kalan)
+            break
+        kesim = kalan.rfind("\n", 0, PARCA_SINIRI)
+        if kesim <= 0:
+            kesim = PARCA_SINIRI
+        parcalar.append(kalan[:kesim].strip())
+        kalan = kalan[kesim:].strip()
+
+    basarili = True
+    for parca in parcalar:
+        if parca and not _tek_parca_gonder(token, chat_id, parca):
+            basarili = False
+    return basarili
 
 
 def _api(token, yontem, **parametreler):

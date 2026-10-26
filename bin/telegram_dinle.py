@@ -3,10 +3,10 @@
 
 ANAYASA Kuralı: Alper'in tek muhatabı Dekan'dır.
 1. Alper Telegram'dan yazdığı anda Dekan mesajı karşılar ve ilgili birimi (`takim_sec`) belirler.
-2. Anlık sorguları (staj listeleme, senkron, onay boyama) sıfır gecikmeyle yanıtlar ve kuyrukta `tamam` işaretler.
-3. Ajan çalışması gerektiren işleri (staj inceleme, Bilgi İşlem kod/hatası çözümü, mevzuat, idari yazı vb.)
-   ilgili birimin kuyruğuna yazar, `bin/kos.py <birim>` + `bin/dagitici.py` ile koşturur ve sonucu Telegram'dan bildirir.
-4. Mesai saatleri içinde 15 dakikada bir e-postaları, 30 dakikada bir ortak staj tablosunu otomatik kontrol eder.
+2. Mesajı ilgili birimin (`staj-burosu`, `postaci`, `bilgi-islem`, `dekan-sekreteri`, `memur`, `dekan`)
+   kuyruğuna yazar, `bin/kos.py <birim>` + `bin/dagitici.py` ile gerçek yapay zekâ ajanını koşturur
+   ve ajanın ürettiği tam yanıtı (`son_yanit`) Telegram'dan Alper'e bildirir.
+3. Mesai saatleri içinde 15 dakikada bir e-postaları, 30 dakikada bir ortak staj tablosunu otomatik kontrol eder.
 """
 import collections
 import contextlib
@@ -209,115 +209,8 @@ def kostur(kok, takim: str) -> int:
     return sonuc.returncode
 
 
-def _kuyruk_tamam_isaretle(kok, takim: str, id_: str, sonuc_notu: str = ""):
-    durum = ayar.durum_oku(takim, kok)
-    kuyruk = list(durum.get("kuyruk") or [])
-    zaman = ayar.simdi_iso()
-    bulundu = False
-    for o in kuyruk:
-        if isinstance(o, dict) and o.get("id") == id_:
-            o["durum"] = "tamam"
-            o["tamamlanma"] = zaman
-            if sonuc_notu:
-                o["sonuc"] = sonuc_notu
-            bulundu = True
-    if not bulundu:
-        kuyruk.append({"id": id_, "durum": "tamam", "not": sonuc_notu, "tamamlanma": zaman})
-    ayar.durum_guncelle(
-        takim,
-        {"durum": "bosta", "son_kosu": zaman, "son_sonuc": sonuc_notu or "tamam", "kuyruk": kuyruk},
-        kok,
-    )
-
-
-def _hizli_komut_isle(kok, metin: str, update_id: int) -> tuple[bool, str]:
-    """
-    0-token ile anında yanıtlanabilecek tablo listeleme / senkron / onay boyama komutlarını işler.
-    (islendi_mi, telegram_yaniti) döner.
-    """
-    m = (metin or "").strip()
-    m_low = m.replace("İ", "i").replace("I", "ı").lower()
-
-    # 1. Öğrenci staj onaylama ve yeşil (+ tekrarları sarı) boyama komutu
-    ogr_eslesme = OGRENCI_NO_RE.search(m)
-    if ogr_eslesme and any(k in m_low for k in ("onayla", "yeşile boya", "yesile boya")):
-        ogr_no = ogr_eslesme.group(1).upper()
-        ok = staj_senkron.kisisel_tablo_onayla_yesil_boya(ogr_no)
-        _kuyruk_tamam_isaretle(kok, "staj-burosu", f"tg-{update_id}", f"{ogr_no} onaylandı ve boyandı ({ok})")
-        if ok:
-            return True, (
-                f"🏛️ *Dekanlık — Staj Onay İşlemi*\n\n"
-                f"✅ *{ogr_no}* numaralı öğrencinin son staj satırı online Kişisel Tabloda *yeşile* (`#D9EAD3`), "
-                f"varsa önceki mükerrer satırları *sarıya* (`#FFF2CC`) boyandı."
-            )
-        return True, f"🏛️ *Dekanlık:* `{ogr_no}` satırı boyanırken online tablo bağlantısında sorun oluştu."
-
-    # 2. Ortak tablodan senkronizasyon komutu
-    if any(k in m_low for k in ("senkron", "güncelle", "guncelle", "yeni defter var mı", "atanmış mı")):
-        try:
-            res = staj_senkron.senkron_kontrol()
-            yeni_liste = res.get("yeni_eklenenler") or []
-            _kuyruk_tamam_isaretle(
-                kok, "staj-burosu", f"tg-{update_id}", f"senkron tamam ({len(yeni_liste)} yeni tekil öğrenci)"
-            )
-            if yeni_liste:
-                satirlar = [
-                    f"🏛️ *Dekanlık:* Ortak tablo tarandı ve *{len(yeni_liste)} yeni tekil öğrenci* online Kişisel Tablonuza eklendi:",
-                    "",
-                ]
-                for y in yeni_liste:
-                    satirlar.append(f"• *{y['ogrenci_no']}* - {y['ad_soyad']}")
-                return True, "\n".join(satirlar)
-            return True, "🏛️ *Dekanlık:* Ortak tablo kontrol edildi. Son imleçten sonra üzerinize atanan yeni defter bulunmuyor."
-        except Exception as e:
-            return True, f"🏛️ *Dekanlık:* Senkronizasyon sırasında hata oluştu: {e}"
-
-    # 3. Salt staj durum / okunmayan tekil öğrenci listeleme sorgusu (inceleme emri içermiyorsa)
-    inceleme_istegi = any(k in m_low for k in ("incele", "değerlendir", "degerlendir", "kontrol et ve raporla"))
-    listeleme_istegi = any(
-        k in m_low for k in ("staj", "defter", "kaç adet", "kac adet", "okunmayan", "revize", "listele", "atanan", "durum")
-    )
-    if listeleme_istegi and not inceleme_istegi and not ogr_eslesme:
-        try:
-            ozet = staj_senkron.kisisel_tablo_durum_listele()
-            okunmayan = ozet.get("okunmamis") or []
-            revize = ozet.get("revize_bekleyen") or []
-
-            satirlar = [
-                "🏛️ *Dekanlık — Staj Durum Raporu*",
-                "",
-                f"Alper Bey, online Kişisel Tablonuz (`Atölye` sekmesi) tekil öğrenci dökümü:",
-                "",
-                f"🟡 *REVİZYON BEKLEYENLER ({len(revize)} Tekil Öğrenci):*",
-            ]
-            for r in revize:
-                not_degeri = r.get("not_metni") or r.get("not") or "—"
-                satirlar.append(f"• *{r.get('ogrenci_no')}* - {r.get('ad_soyad')} | Not: _{not_degeri}_")
-
-            satirlar.append("")
-            satirlar.append(f"⚪ *OKUNMAYAN DEFTERLER ({len(okunmayan)} Tekil Öğrenci):*")
-            for o in okunmayan:
-                tekrar_ek = (
-                    f" _(Önceki tekrar satırı: {', '.join(map(str, o['onceki_tekrar_satirlar']))})_"
-                    if o.get("onceki_tekrar_satirlar")
-                    else ""
-                )
-                satirlar.append(f"• Satır {o.get('satir')}: *{o.get('ogrenci_no')}* - {o.get('ad_soyad')}{tekrar_ek}")
-
-            satirlar.append("")
-            satirlar.append("İncelemeyi başlatmak için *'<ÖğrenciNo> incele'* emri verebilirsiniz.")
-            _kuyruk_tamam_isaretle(
-                kok, "staj-burosu", f"tg-{update_id}", f"Tekil staj listesi sunuldu ({len(okunmayan)} okunmayan)"
-            )
-            return True, "\n".join(satirlar)
-        except Exception as e:
-            return True, f"🏛️ *Dekanlık:* Staj tablosu sorgulanırken hata oluştu: {e}"
-
-    return False, ""
-
-
 def tek_tur(kok, token, chat_id, bekleme=BEKLEME_SN):
-    """Telegram'ı bir kez yoklar; yeni mesaj varsa Dekan olarak yanıtlar, kuyruğa yazar ve ilgili birimi koşturur."""
+    """Telegram'ı bir kez yoklar; yeni mesaj varsa kuyruğa yazar, ilgili birimi koşturur ve yanıtı Telegram'a gönderir."""
     son = int((ayar.durum_oku(TAKIM, kok).get("sayaclar") or {}).get("telegram_son_update", 0))
     try:
         guncellemeler = telegram_oku.guncellemeleri_cek(
@@ -331,35 +224,25 @@ def tek_tur(kok, token, chat_id, bekleme=BEKLEME_SN):
     if not yazilan:
         return []
 
-    gruplar = collections. OrderedDict()
+    gruplar = collections.OrderedDict()
     for yol in yazilan:
         try:
             mesaj = json.loads(Path(yol).read_text(encoding="utf-8"))
         except Exception:
             continue
 
-        metin = mesaj.get("metin") or mesaj.get("not") or ""
         update_id = mesaj.get("update_id")
-
-        # Önce 0-token hızlı sorgu mu kontrol et
-        islendi, hizli_yanit = _hizli_komut_isle(kok, metin, update_id)
-        if islendi:
-            _log(kok, f"tg-{update_id} → Dekan hızlı yanıt üretti ve tamamlandı")
-            telegram_oku.mesaj_gonder(token, chat_id, hizli_yanit)
-            continue
-
         hedef_takim = takim_sec(mesaj)
         notu = f"telegram: {not_metni(mesaj)}"
         dagitici.kuyruga_yaz(kok, hedef_takim, f"tg-{update_id}", notu)
         _log(kok, f"tg-{update_id} -> {hedef_takim}: {notu}")
         gruplar.setdefault(hedef_takim, []).append(mesaj)
 
-    # Ajan koşusu gerektiren birimleri tetikle ve sonucu Telegram'dan bildir
+    # Görevlendirilen birimleri koştur ve ajanın ürettiği tam yanıtı Telegram'dan bildir
     for hedef_takim, mesajlar in gruplar.items():
         simdi = datetime.now().astimezone()
         kossun, sebep = dagitici.tetik_karari(kok, hedef_takim, simdi)
         if not kossun:
-            # Tetik kararı olumsuzsa (mesai dışı, günlük bütçe/koşu tavanı vb.) kullanıcıyı bilgilendir
             telegram_oku.mesaj_gonder(
                 token,
                 chat_id,
@@ -371,17 +254,18 @@ def tek_tur(kok, token, chat_id, bekleme=BEKLEME_SN):
         telegram_oku.mesaj_gonder(
             token,
             chat_id,
-            f"🏛️ *Dekanlık:* Emriniz alındı Alper Bey. Görev `{hedef_takim}` birimine atandı ({len(mesajlar)} mesaj), koşu başlatılıyor...",
+            f"🏛️ *Dekanlık:* Emriniz alındı Alper Bey. Görev `{hedef_takim}` ajanına iletildi, koşu başlatılıyor...",
         )
         _log(kok, f"{hedef_takim} koşturuluyor ({len(mesajlar)} yeni mesaj)")
         kod = kostur(kok, hedef_takim)
         guncel_durum = ayar.durum_oku(hedef_takim, kok)
         son_sonuc = guncel_durum.get("son_sonuc") or f"çıkış={kod}"
+        tam_yanit = guncel_durum.get("son_yanit") or son_sonuc
         _log(kok, f"{hedef_takim} bitti (çıkış={kod}): {son_sonuc}")
         telegram_oku.mesaj_gonder(
             token,
             chat_id,
-            f"🏛️ *Dekanlık — `{hedef_takim}` Raporu:*\n{son_sonuc}",
+            f"🏛️ *Dekanlık — `{hedef_takim}` Yanıtı:*\n\n{tam_yanit}",
         )
 
     return yazilan
@@ -417,7 +301,7 @@ def _otomatik_staj_ve_eposta_kontrol(kok, token, chat_id, son_posta: float, son_
             if yeni_liste:
                 _log(kok, f"Otomatik staj senkronu: {len(yeni_liste)} yeni tekil öğrenci tespit edildi")
                 satirlar = [
-                    f"🏛️ *Dekanlık — Otomatik Staj Bildirimi*",
+                    "🏛️ *Dekanlık — Otomatik Staj Bildirimi*",
                     f"Ortak tabloda üzerinize atanan *{len(yeni_liste)} yeni tekil staj defteri* tespit edildi ve online Kişisel Tablonuza eklendi:",
                     "",
                 ]
