@@ -160,6 +160,34 @@ def tek_tur(kok, token, chat_id, bekleme=BEKLEME_SN, kosucu=None):
 
 
 def _kos(kok, takim):
+    # E?er do?rudan h?zl? bir durum sorgusu geldiyse an?nda yan?t ?ret
+    durum = ayar.durum_oku(takim, kok)
+    kuyruk = durum.get("kuyruk") or []
+    son_madde = kuyruk[-1] if kuyruk else {}
+    baslik = (son_madde.get("baslik") or "").lower()
+
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    ham_id = os.environ.get("TELEGRAM_CHAT_ID")
+    if token and ham_id:
+        chat_id = int(ham_id)
+        # Staj sorgusu ise h?zl?ca Ki?isel Tablo durumunu d?nd?r
+        if any(k in baslik for k in ["okunmayan", "okunmamis", "kac adet", "defter var", "yeni staj"]):
+            try:
+                import staj_senkron
+                ozet = staj_senkron.kisisel_tablo_durum_listele()
+                okunmamis_sayisi = len(ozet.get("okunmamis") or [])
+                revize_sayisi = len(ozet.get("revize_bekleyen") or [])
+                cevap = (
+                    f"?? *Staj B?rosu Anl?k Durum Raporu*\n\n"
+                    f"? *Okunmam?? Defter Say?s?:* `{okunmamis_sayisi}` adet\n"
+                    f"? *Revize Bekleyen Defter Say?s?:* `{revize_sayisi}` adet\n"
+                    f"? *Kaynak:* `{ozet.get('kaynak')}`\n\n"
+                    f"?ncelemeye ba?lamak i?in *'?ncele'* veya *'Ba?la'* diyebilirsiniz."
+                )
+                telegram_oku.mesaj_gonder(token, chat_id, cevap)
+            except Exception as e:
+                _log(kok, f"H?zl? yan?t hatas?: {e}")
+
     sonuc = subprocess.run([sys.executable, str(Path(kok) / "bin" / "kos.py"), takim], cwd=str(kok))
     return sonuc.returncode
 
