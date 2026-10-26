@@ -1,16 +1,10 @@
 #!/usr/bin/env python3
-"""Telegram dinleyici — bota mesaj düştüğü anda ilgili ofis birimi koşar.
+# -*- coding: utf-8 -*-
+"""Telegram dinleyici ve Dekan muhatap servisi (telegram_dinle.py).
 
-Kullanım:
-  py -3 bin/telegram_dinle.py            # sonsuz long-poll döngüsü
-  py -3 bin/telegram_dinle.py --bir-kez  # tek tur döner (test)
-
-Offset yönetimi ve chat id filtresi `bin/telegram_oku.py`'dedir (`takimlar/postaci/gelen/`).
-Yönlendirme `takim_sec`'te tek yerdedir:
-  - İçinde "yönerge", "mevzuat", "kılavuz" geçen veya PDF/belge ekiyle kural derleme isteyen mesaj → `dekan-sekreteri`
-  - İçinde "staj", "defter", "sicil" geçen mesaj → `staj-burosu`
-  - İçinde "müdek", "komisyon", "tutanak" geçen mesaj → `memur`
-  - Sesli not veya genel e-posta/iş mesajı → `dekan` (veya `postaci`)
+ANAYASA Kuralı: Alper'in tek muhatabı Dekan'dır.
+1. Alper Telegram'dan yazdığı anda doğrudan Dekan yanıt üretir.
+2. Mesaj Dekan kuyruğuna alınır ve alt birimlere iş emri dağıtılır.
 """
 import collections
 import json
@@ -23,23 +17,12 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import ayar  # noqa: E402
-import telegram_oku  # noqa: E402
+import ayar
+import telegram_oku
+import staj_senkron
 
 KOK = ayar.KOK
-TAKIM = telegram_oku.TAKIM  # postaci — gelen kutusu ve offset burada tutulur
-
-MEVZUAT_DESEN = re.compile(r"(yönerge|yonerge|mevzuat|kılavuz|kilavuz)", re.IGNORECASE)
-STAJ_DESEN = re.compile(r"(staj|defter|sicil)", re.IGNORECASE)
-MEMUR_DESEN = re.compile(r"(müdek|mudek|komisyon|tutanak|denetim)", re.IGNORECASE)
-
-KUYRUK_ONEKI = {
-    "dekan": "dkn",
-    "dekan-sekreteri": "sek",
-    "staj-burosu": "staj",
-    "memur": "mmr",
-    "postaci": "pst",
-}
+TAKIM = "postaci"
 
 BEKLEME_SN = 15
 TUR_ARASI_SN = 2
@@ -59,58 +42,19 @@ def _log(kok, satir):
     for sir in _SIRLAR:
         satir = satir.replace(sir, "***")
     damga = datetime.now().astimezone().isoformat(timespec="seconds")
-    print(f"[BİLGİ] {damga} | {satir}", flush=True)
+    print(f"[BILGI] {damga} | {satir}", flush=True)
     yol = Path(kok) / "sirket-log" / LOG_ADI
     try:
         yol.parent.mkdir(parents=True, exist_ok=True)
         with open(yol, "a", encoding="utf-8") as dosya:
-            dosya.write(f"[BİLGİ] {damga} | {satir}\n")
+            dosya.write(f"[BILGI] {damga} | {satir}\n")
     except OSError:
         pass
 
 
 def _temiz(metin, sinir=NOT_SINIRI):
     tek_satir = " ".join(str(metin or "").split())
-    return tek_satir[:sinir] + ("…" if len(tek_satir) > sinir else "")
-
-
-def takim_sec(mesaj: dict) -> str | None:
-    """Mesajı hangi birim karşılar?"""
-    metin = (mesaj.get("metin") or "").strip()
-    if metin.startswith("/start"):
-        return None
-    if MEVZUAT_DESEN.search(metin):
-        return "dekan-sekreteri"
-    if STAJ_DESEN.search(metin):
-        return "staj-burosu"
-    if MEMUR_DESEN.search(metin):
-        return "memur"
-    if mesaj.get("ek_turu") == "ses":
-        return "postaci"
-    if metin or mesaj.get("ek_turu"):
-        return "dekan"
-    return None
-
-
-def kuyruk_maddesi(mesaj: dict, takim: str) -> tuple[str, str]:
-    parcalar = [f"telegram {str(mesaj.get('zaman') or '')[:16]}"]
-    if mesaj.get("dosya_adi"):
-        parcalar.append(f"dosya: {mesaj['dosya_adi']}")
-    notu = _temiz(mesaj.get("not") or mesaj.get("metin"))
-    if notu:
-        parcalar.append(f"not: {notu}")
-    onek = KUYRUK_ONEKI.get(takim, "tg")
-    return f"{onek}-{mesaj['update_id']}", " · ".join(parcalar)
-
-
-def gelen_mesajlar(yollar):
-    mesajlar = []
-    for yol in yollar:
-        try:
-            mesajlar.append(json.loads(Path(yol).read_text(encoding="utf-8")))
-        except (OSError, ValueError):
-            continue
-    return mesajlar
+    return tek_satir[:sinir] + ("..." if len(tek_satir) > sinir else "")
 
 
 def kuyruga_ekle(takim: str, madde_id: str, baslik: str, kok=None):
@@ -123,7 +67,50 @@ def kuyruga_ekle(takim: str, madde_id: str, baslik: str, kok=None):
     return True
 
 
-def tek_tur(kok, token, chat_id, bekleme=BEKLEME_SN, kosucu=None):
+def dekan_yaniti_uret(metin: str) -> str:
+    """Alper'in mesajına Dekan olarak kurumsal ve anlık yanıt üretir."""
+    m = (metin or "").lower()
+
+    if any(k in m for k in ["staj", "defter", "kac adet", "okunmayan", "revize", "listele", "atanan"]):
+        try:
+            ozet = staj_senkron.kisisel_tablo_durum_listele()
+            okunmayan = len(ozet.get("okunmamis") or [])
+            revize = len(ozet.get("revize_bekleyen") or [])
+            kaynak = ozet.get("kaynak") or "online tablo"
+
+            ornek = ""
+            if okunmayan > 0:
+                ornek = "\n\n*Bekleyen İlk Öğrenciler:*\n" + "\n".join([f"• {o.get('ogrenci_no')} - {o.get('ad_soyad')}" for o in ozet.get("okunmamis", [])[:5]])
+                if okunmayan > 5:
+                    ornek += f"\n_...ve {okunmayan - 5} öğrenci daha_"
+
+            return (
+                f"🏛️ *Dekanlık — Staj Durum Raporu*\n\n"
+                f"Alper Bey, Kişisel Tablonuz (`Atölye` sekmesi) güncel durumu:\n"
+                f"• *Okunmamış Defter:* `{okunmayan}` adet\n"
+                f"• *Revize Bekleyen:* `{revize}` adet\n"
+                f"• *Kaynak:* `{kaynak}`"
+                f"{ornek}\n\n"
+                f"İncelemeyi başlatmak için *'İncele'* veya *'Başla'* emri verebilirsiniz."
+            )
+        except Exception as e:
+            return f"🏛️ *Dekanlık:* Staj tablosu sorgulanırken hata oluştu: {e}"
+
+    if any(k in m for k in ["güncelle", "guncelle", "senkron", "tekrar kontrol"]):
+        try:
+            res = staj_senkron.senkron_kontrol()
+            yeni = len(res.get("yeni_eklenenler") or [])
+            return f"🏛️ *Dekanlık:* Ortak tablo kontrol edildi. Üzerinize atanan yeni defter sayısı: `{yeni}`."
+        except Exception as e:
+            return f"🏛️ *Dekanlık:* Senkronizasyon hatası: {e}"
+
+    return (
+        f"🏛️ *Dekanlık:* Emriniz alındı Alper Bey: \"{metin}\".\n"
+        f"Gerekli iş planı ve birim koordinasyonu yapılıyor."
+    )
+
+
+def tek_tur(kok, token, chat_id, bekleme=BEKLEME_SN):
     son = int((ayar.durum_oku(TAKIM, kok).get("sayaclar") or {}).get("telegram_son_update", 0))
     try:
         guncellemeler = telegram_oku.guncellemeleri_cek(
@@ -132,74 +119,41 @@ def tek_tur(kok, token, chat_id, bekleme=BEKLEME_SN, kosucu=None):
     except telegram_oku.TelegramHatasi as exc:
         _log(kok, f"{exc} (kod={exc.kod}) — tur atlandı")
         return []
+
     yazilan = telegram_oku.isle(kok, guncellemeler, chat_id)
     if not yazilan:
         return []
-    hedefler = collections.OrderedDict()
-    for mesaj in gelen_mesajlar(yazilan):
-        hedef = takim_sec(mesaj)
-        if not hedef:
-            _log(kok, f"yoksayıldı update_id={mesaj.get('update_id')}")
-            continue
-        madde_id, notu = kuyruk_maddesi(mesaj, hedef)
-        kuyruga_ekle(hedef, madde_id, notu, kok=kok)
-        hedefler.setdefault(hedef, []).append(madde_id)
-    if not hedefler:
-        return []
 
-    # 1. Kullan?c?ya mesaj?n?n al?nd???na dair anl?k Telegram teyidi g?nder
-    if token and chat_id:
+    for yol in yazilan:
         try:
-            for hedef, maddeler in hedefler.items():
-                alinan_bilgi = f"?? *Mesaj?n?z Al?nd?*\n\n??lem `{hedef}` birimine aktar?ld?, inceleniyor..."
-                telegram_oku.mesaj_gonder(token, chat_id, alinan_bilgi)
+            mesaj = json.loads(Path(yol).read_text(encoding="utf-8"))
         except Exception:
-            pass
-
-    baslatilan = []
-    for hedef, maddeler in hedefler.items():
-        if not ayar.mesaide_mi():
-            _log(kok, f"kuyruğa eklendi ({hedef}): {', '.join(maddeler)} — mesai dışı, koşu sabah")
             continue
-        _log(kok, f"koşu başlıyor ({hedef}): {', '.join(maddeler)}")
-        kod = (kosucu or _kos)(kok, hedef)
-        _log(kok, f"koşu bitti ({hedef}): kod={kod}")
-        if kod == 0:
-            baslatilan.extend(maddeler)
-    return baslatilan
 
+        metin = mesaj.get("metin") or mesaj.get("not") or ""
+        update_id = mesaj.get("update_id")
+        _log(kok, f"Yeni mesaj: {update_id} -> Dekan devraldı: {metin}")
 
-def _kos(kok, takim):
-    # E?er do?rudan h?zl? bir durum sorgusu geldiyse an?nda yan?t ?ret
-    durum = ayar.durum_oku(takim, kok)
-    kuyruk = durum.get("kuyruk") or []
-    son_madde = kuyruk[-1] if kuyruk else {}
-    baslik = (son_madde.get("baslik") or "").lower()
+        # 1. Anında Alper'e Dekan olarak teyit ve yanıt gönder
+        try:
+            yanit = dekan_yaniti_uret(metin)
+            telegram_oku.mesaj_gonder(token, chat_id, yanit)
+        except Exception as e:
+            _log(kok, f"Dekan yanıt gönderim hatası: {e}")
 
-    token = os.environ.get("TELEGRAM_BOT_TOKEN")
-    ham_id = os.environ.get("TELEGRAM_CHAT_ID")
-    if token and ham_id:
-        chat_id = int(ham_id)
-        # Staj sorgusu ise h?zl?ca Ki?isel Tablo durumunu d?nd?r
-        if any(k in baslik for k in ["okunmayan", "okunmamis", "kac adet", "defter var", "yeni staj"]):
-            try:
-                import staj_senkron
-                ozet = staj_senkron.kisisel_tablo_durum_listele()
-                okunmamis_sayisi = len(ozet.get("okunmamis") or [])
-                revize_sayisi = len(ozet.get("revize_bekleyen") or [])
-                cevap = (
-                    f"?? *Staj B?rosu Anl?k Durum Raporu*\n\n"
-                    f"? *Okunmam?? Defter Say?s?:* `{okunmamis_sayisi}` adet\n"
-                    f"? *Revize Bekleyen Defter Say?s?:* `{revize_sayisi}` adet\n"
-                    f"? *Kaynak:* `{ozet.get('kaynak')}`\n\n"
-                    f"?ncelemeye ba?lamak i?in *'?ncele'* veya *'Ba?la'* diyebilirsiniz."
-                )
-                telegram_oku.mesaj_gonder(token, chat_id, cevap)
-            except Exception as e:
-                _log(kok, f"H?zl? yan?t hatas?: {e}")
+        # 2. Kuyruğa Dekan maddesi olarak ekle
+        madde_id = f"dkn-{update_id}"
+        kuyruga_ekle("dekan", madde_id, f"telegram: {metin}", kok=kok)
 
-    sonuc = subprocess.run([sys.executable, str(Path(kok) / "bin" / "kos.py"), takim], cwd=str(kok))
-    return sonuc.returncode
+        # 3. İlgili alt birim varsa onun kuyruğuna da iş emri bırak
+        if re.search(r"(staj|defter|sicil)", metin, re.IGNORECASE):
+            kuyruga_ekle("staj-burosu", f"staj-{update_id}", f"dekan emri: {metin}", kok=kok)
+        elif re.search(r"(yönerge|yonerge|mevzuat|kılavuz|kilavuz)", metin, re.IGNORECASE):
+            kuyruga_ekle("dekan-sekreteri", f"sek-{update_id}", f"dekan emri: {metin}", kok=kok)
+        elif re.search(r"(müdek|mudek|komisyon|tutanak)", metin, re.IGNORECASE):
+            kuyruga_ekle("memur", f"mmr-{update_id}", f"dekan emri: {metin}", kok=kok)
+
+    return yazilan
 
 
 def main(argv) -> int:
@@ -214,12 +168,12 @@ def main(argv) -> int:
     if "--bir-kez" in argv:
         tek_tur(KOK, token, chat_id, bekleme=0)
         return 0
-    _log(KOK, f"dinleyici başladı (varsayılan={TAKIM}, long-poll={BEKLEME_SN}sn)")
+    _log(KOK, f"dinleyici başladı (Dekan muhatap, long-poll={BEKLEME_SN}sn)")
     son_posta_kontrol = 0.0
     try:
         while True:
             tek_tur(KOK, token, chat_id, bekleme=BEKLEME_SN)
-            # Her 15 dakikada bir (900 sn) 0-token yeni e-posta kontrolü
+            # 15 dakikada bir e-posta kontrolü
             simdi = time.time()
             if ayar.mesaide_mi() and (simdi - son_posta_kontrol >= 900):
                 son_posta_kontrol = simdi
