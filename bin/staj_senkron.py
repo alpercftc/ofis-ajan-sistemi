@@ -242,8 +242,8 @@ def kisisel_tablo_durum_listele(
     sheet_id: Optional[str] = None, xlsx_yolu: Path = VARSAYILAN_YEREL_XLSX
 ) -> Dict[str, List[dict]]:
     """
-    Ortak tabloya gitmeden doğrudan Kişisel Tablonun (öncelikle KISISEL_SHEET_ID üzerinden online,
-    erişilemezse yerel yedekten) 'Atölye' sekmesindeki okunmamış ve revize bekleyen satırları döner.
+    Ortak tabloya gitmeden do?rudan Ki?isel Tablonun ('At?lye' sekmesi) g?ncel durumunu d?ner.
+    M?kerrer y?klenen defterler aras?nda yaln?zca en son tarihli TEK?L ??renci kay?tlar?n? listeler.
     """
     sonuc = {"kaynak": None, "okunmamis": [], "revize_bekleyen": [], "son_satir": None}
     hedef_id = sheet_id or KISISEL_SHEET_ID
@@ -263,6 +263,7 @@ def kisisel_tablo_durum_listele(
         return sonuc
     ws = wb[AKTIF_SEKME]
 
+    ham_okunmamis = []
     for r in range(2, ws.max_row + 1):
         ogr_no = ws.cell(r, 5).value
         ad_soyad = ws.cell(r, 7).value
@@ -278,16 +279,24 @@ def kisisel_tablo_durum_listele(
             "ogrenci_no": str(ogr_no or "").strip(),
             "ad_soyad": str(ad_soyad or "").strip(),
             "zaman_damgasi": str(zaman_damgasi or "").strip(),
-            "not": str(not_degeri or "").strip(),
+            "not_metni": str(not_degeri or "").strip(),
             "drive_link": str(drive_link or "").strip(),
             "onayli_boyali": boyali,
         }
         sonuc["son_satir"] = kayit
         if not boyali:
-            if kayit["not"]:
+            if kayit["not_metni"]:
                 sonuc["revize_bekleyen"].append(kayit)
             else:
-                sonuc["okunmamis"].append(kayit)
+                ham_okunmamis.append(kayit)
+
+    # M?kerrer defterleri ay?kla: Her ??renci i?in daima EN SON sat?rdaki g?ncel defteri al
+    son_ogrenciler = {}
+    for o in ham_okunmamis:
+        key = o["ogrenci_no"].lower() if o["ogrenci_no"] else o["ad_soyad"].lower()
+        son_ogrenciler[key] = o
+
+    sonuc["okunmamis"] = [o for o in ham_okunmamis if son_ogrenciler[o["ogrenci_no"].lower() if o["ogrenci_no"] else o["ad_soyad"].lower()]["satir"] == o["satir"]]
 
     return sonuc
 
@@ -429,7 +438,7 @@ def main() -> int:
 
     print(f"[BILGI] Revize Bekleyen (Boyasız, Not Dolu) Defter Sayısı: {len(durum_ozeti['revize_bekleyen'])}")
     for r in durum_ozeti["revize_bekleyen"]:
-        print(f"  - [REVİZE]   Satır {r['satir']}: {r['ogrenci_no']} | {r['ad_soyad']} -> Not: {r['not']}")
+        print(f"  - [REVİZE]   Satır {r['satir']}: {r['ogrenci_no']} | {r['ad_soyad']} -> Not: {(r.get('not_metni') or r.get('not') or '')}")
 
     return 0
 

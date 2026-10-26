@@ -58,6 +58,18 @@
       "baslik": "telegram: Revizyon bekleyen ve okunmamış staj defterlerini tek tek listele",
       "durum": "bekliyor",
       "zaman": "2026-10-26T11:10:38+03:00"
+    },
+    {
+      "id": "dkn-372953519",
+      "baslik": "telegram: Revize bekleyen öğrenci listesini ver",
+      "durum": "bekliyor",
+      "zaman": "2026-10-26T11:19:58+03:00"
+    },
+    {
+      "id": "dkn-372953520",
+      "baslik": "telegram: Sadece revize bekleyen kimler var",
+      "durum": "bekliyor",
+      "zaman": "2026-10-26T11:20:31+03:00"
     }
   ],
   "mufettis": {
